@@ -34,21 +34,12 @@ body {
   label,
   span,
   p,
-  strong,
-  .btn-primary,
-  .btn-secondary {
-    color: #f5f5f5 !important;
-  }
-  .pedido-header {
+  h2,
+  h3 {
     color: #f5f5f5;
   }
-  .estado-buttons button {
-    background-color: #333;
-    color: #fff;
-  }
-  .pedido-detalles {
-    background-color: #2a2a2a;
-    border-color: #444;
+  .section {
+    background-color: #1a1a1a;
   }
 }
 
@@ -103,6 +94,8 @@ textarea {
   font-size: 1rem;
   width: 100%;
   box-sizing: border-box;
+  background-color: #fff;
+  color: #000;
 }
 
 textarea {
@@ -136,6 +129,7 @@ textarea {
   border-radius: 10px;
   cursor: pointer;
   margin-top: 0.5rem;
+  color: #333;
 }
 
 .btn-delete {
