@@ -48,59 +48,53 @@ function App() {
   };
 
   const enviarPedido = async () => {
-  const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
-  const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
-  const body = {
-    familiar,
-    totalMonto,
-    fecha: nuevoPedido.fecha,
-    codigo: nuevoPedido.codigo,
-    comentarios: nuevoPedido.comentarios,
-    estado: nuevoPedido.estado,
-    articulos: nuevoPedido.articulos
-  };
+    const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
+    const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
+    const body = {
+      familiar,
+      totalMonto,
+      fecha: nuevoPedido.fecha,
+      codigo: nuevoPedido.codigo,
+      comentarios: nuevoPedido.comentarios,
+      estado: nuevoPedido.estado,
+      articulos: nuevoPedido.articulos
+    };
 
-  console.log("📦 Enviando pedido:", body); // <- esto te ayuda a ver qué se está enviando
-
-  try {
-    const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!respuesta.ok) {
-      const error = await respuesta.json();
-      console.error("❌ Error desde el servidor:", error);
-      throw new Error(error.detalle || error.error || 'Error inesperado al enviar el pedido');
-    }
-
-    const data = await respuesta.json();
-    alert("✅ Pedido enviado con éxito");
-    console.log("🎉 Respuesta del servidor:", data);
-  } catch (error) {
-    console.error("🚨 Error en envío:", error);
-    alert("Error al enviar pedido: " + error.message);
-  }
-};
-
+    console.log("📦 Enviando pedido:", body);
 
     try {
-      const res = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
+      const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(body)
       });
-      const data = await res.json();
+
+      if (!respuesta.ok) {
+        const error = await respuesta.json();
+        console.error("❌ Error desde el servidor:", error);
+        throw new Error(error.detalle || error.error || 'Error inesperado al enviar el pedido');
+      }
+
+      const data = await respuesta.json();
+      alert("✅ Pedido enviado con éxito");
+      console.log("🎉 Respuesta del servidor:", data);
+
       setPedidos([data, ...pedidos]);
       setNuevoPedido({
-        nombre: '', apellido: '', codigo: '', fecha: new Date().toISOString().split('T')[0],
-        estado: 'PENDIENTE', comentarios: '', articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
+        nombre: '',
+        apellido: '',
+        codigo: '',
+        fecha: new Date().toISOString().split('T')[0],
+        estado: 'PENDIENTE',
+        comentarios: '',
+        articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
       });
+
     } catch (error) {
-      alert('Error al enviar pedido');
+      console.error("🚨 Error en envío:", error);
+      alert("Error al enviar pedido: " + error.message);
     }
   };
 
@@ -132,14 +126,13 @@ function App() {
   };
 
   const pedidosFiltrados = Array.isArray(pedidos)
-  ? pedidos.filter(p => {
-      const coincideEstado = filtro.estado ? p.estado === filtro.estado : true;
-      const coincideTexto = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
-      const coincideFecha = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
-      return coincideEstado && coincideTexto && coincideFecha;
-    })
-  : [];
-
+    ? pedidos.filter(p => {
+        const coincideEstado = filtro.estado ? p.estado === filtro.estado : true;
+        const coincideTexto = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
+        const coincideFecha = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
+        return coincideEstado && coincideTexto && coincideFecha;
+      })
+    : [];
 
   return (
     <main className="container">
@@ -149,44 +142,43 @@ function App() {
 
       <section className="section form-section">
         <h2 className="subtitle">📝 Nuevo Pedido</h2>
-<div className="form-grid">
-  <div className="form-group">
-    <label>Nombre</label>
-    <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} placeholder="David" />
-  </div>
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Nombre</label>
+            <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} placeholder="David" />
+          </div>
 
-  <div className="form-group">
-    <label>Apellido</label>
-    <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} placeholder="Espinoza" />
-  </div>
+          <div className="form-group">
+            <label>Apellido</label>
+            <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} placeholder="Espinoza" />
+          </div>
 
-  <div className="form-group">
-    <label>Código</label>
-    <input name="codigo" value={nuevoPedido.codigo} onChange={handleChange} placeholder="Dx000000007" />
-  </div>
+          <div className="form-group">
+            <label>Código</label>
+            <input name="codigo" value={nuevoPedido.codigo} onChange={handleChange} placeholder="Dx000000007" />
+          </div>
 
-  <div className="form-group">
-    <label>Fecha</label>
-    <input type="date" name="fecha" value={nuevoPedido.fecha} onChange={handleChange} />
-  </div>
+          <div className="form-group">
+            <label>Fecha</label>
+            <input type="date" name="fecha" value={nuevoPedido.fecha} onChange={handleChange} />
+          </div>
 
-  <div className="form-group">
-    <label>Estado</label>
-    <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
-      {ESTADOS.map((e) => (
-        <option key={e.label} value={e.label}>
-          {e.icon} {e.label}
-        </option>
-      ))}
-    </select>
-  </div>
+          <div className="form-group">
+            <label>Estado</label>
+            <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
+              {ESTADOS.map((e) => (
+                <option key={e.label} value={e.label}>
+                  {e.icon} {e.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-  <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-    <label>Comentarios</label>
-    <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} placeholder="Observaciones o detalles" />
-  </div>
-</div>
-
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label>Comentarios</label>
+            <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} placeholder="Observaciones o detalles" />
+          </div>
+        </div>
 
         <h3>📦 Artículos</h3>
         {nuevoPedido.articulos.map((art, i) => (
@@ -252,4 +244,3 @@ function App() {
 }
 
 export default App;
-
