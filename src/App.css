@@ -236,3 +236,9 @@ textarea {
     color: #fff;
   }
 }
+
+/* Centrar el contenido horizontalmente en pantallas grandes */
+.App {
+  display: flex;
+  justify-content: center;
+}
