@@ -3,6 +3,7 @@ import './App.css';
 import Estadisticas from './Estadisticas';
 
 function App() {
+  const [mostrarEstadisticas, setMostrarEstadisticas] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '' });
   const [nuevoPedido, setNuevoPedido] = useState({
@@ -253,7 +254,10 @@ function App() {
       </section>
 
       <section className="section">
-        <Estadisticas />
+        <button className="btn-secondary" onClick={() => setMostrarEstadisticas(!mostrarEstadisticas)}>
+          📈 {mostrarEstadisticas ? 'Ocultar estadísticas' : 'Ver estadísticas'}
+        </button>
+        {mostrarEstadisticas && <Estadisticas />}
       </section>
     </main>
   );
