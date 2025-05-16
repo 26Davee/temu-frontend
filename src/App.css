@@ -8,9 +8,11 @@ body {
 
 .container {
   max-width: 900px;
-  margin: 2rem auto;
+  margin: 2rem auto; /* Esto centra horizontalmente */
   padding: 1.5rem;
+  display: block;
 }
+
 
 .section {
   margin-bottom: 2.5rem;
