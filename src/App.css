@@ -1,197 +1,177 @@
+/* === Estilos Generales === */
 body {
-  background-color: #f4f6f8;
+  background-color: #f5f7fa;
   font-family: 'Segoe UI', sans-serif;
   margin: 0;
   padding: 0;
   color: #1a1a1a;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
-    color: #f5f5f5;
-  }
-  input,
-  select,
-  textarea {
-    background-color: #1e1e1e;
-    color: #fff;
-    border-color: #444;
-  }
-  button {
-    background-color: #2c2c2c;
-    color: #fff;
-  }
-  .form-section,
-  .pedido-detalles,
-  .pedido-item,
-  .header-section {
-    background-color: #1c1c1c;
-    border-color: #333;
-  }
-  .title,
-  label,
-  .pedido-header span,
-  .pedido-detalles p,
-  .pedido-detalles li {
-    color: #ffffff;
-  }
-}
-
-.container {
-  max-width: 900px;
+.contenedor-app {
+  max-width: 800px;
   margin: 2rem auto;
-  padding: 1.5rem;
-}
-
-.section {
-  margin-bottom: 2.5rem;
-  padding: 1.8rem;
-  background-color: #f1f1f1;
-  border-radius: 16px;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-}
-
-.header-section {
-  background: linear-gradient(to right, #1a73e8, #4285f4);
-  color: white;
-  text-align: center;
+  padding: 2rem;
+  background: #ffffff;
   border-radius: 12px;
-  padding: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.title {
-  font-size: 2.6rem;
-  margin: 0;
-  font-weight: 700;
-}
-
-.subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 1.2rem;
-  font-weight: 600;
+.titulo {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
   color: #1a1a1a;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
 }
 
 input,
 select,
 textarea {
-  padding: 0.9rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
   width: 100%;
-  box-sizing: border-box;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.articulo-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  padding: 0.75rem;
   margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #1a1a1a;
 }
 
-.btn-primary {
+button {
+  font-size: 0.95rem;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.92;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.main {
   background-color: #1a73e8;
   color: white;
   font-weight: bold;
-  border: none;
-  padding: 0.7rem 1.4rem;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  font-size: 1rem;
 }
 
-.btn-secondary {
-  background-color: #eee;
+button.secondary {
+  background-color: #eeeeee;
   border: 1px solid #ccc;
-  padding: 0.6rem 1.2rem;
+  color: #333;
+}
+
+ul {
+  padding-left: 0;
+  list-style-type: none;
+}
+
+.seccion-formulario,
+.seccion-lista {
+  margin-bottom: 3rem;
+}
+
+.pedido-card {
+  background-color: #fafafa;
+  padding: 1rem;
   border-radius: 10px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+
+.estado-button {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  margin-right: 6px;
+  border: none;
   cursor: pointer;
-  margin-top: 0.5rem;
+  background-color: #e0e0e0;
   color: #1a1a1a;
 }
 
-.btn-delete {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  margin-left: 0.5rem;
-  cursor: pointer;
-}
-
-.btn-selected {
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-}
-
-.estado-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 0.8rem;
-}
-
-.pedido-list {
-  list-style: none;
-  padding: 0;
-}
-
-.pedido-item {
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 1.2rem;
-  margin-bottom: 1.8rem;
+.pedido-detalle {
   background-color: #f1f1f1;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
 }
 
-.pedido-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.pedido-detalles {
-  background-color: #f9f9f9;
-  padding: 1rem 1.2rem;
-  border-radius: 10px;
-  margin-top: 1rem;
-  font-size: 0.96rem;
-  color: #1a1a1a;
-}
-
-.filter-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
+/* === Responsive === */
 @media (max-width: 600px) {
-  .title {
-    font-size: 2rem;
+  .contenedor-app {
+    padding: 1rem 0.8rem;
   }
-  .subtitle {
-    font-size: 1.2rem;
+
+  .titulo {
+    font-size: 1.8rem;
   }
-  .container {
-    padding: 1rem;
+
+  input,
+  select,
+  textarea {
+    font-size: 0.95rem;
+  }
+
+  button {
+    font-size: 0.9rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* === Modo Oscuro === */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #f5f5f5;
+  }
+
+  .contenedor-app,
+  .form-container,
+  .pedido-card,
+  .pedido-detalle {
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+    border-color: #333;
+  }
+
+  input,
+  textarea,
+  select {
+    background-color: #2a2a2a;
+    color: #f5f5f5;
+    border-color: #444;
+  }
+
+  button.main {
+    background-color: #1976d2;
+    color: #fff;
+  }
+
+  button.secondary,
+  .estado-button {
+    background-color: #333;
+    color: #fff;
+  }
+
+  h1,
+  h2,
+  h3,
+  label,
+  span,
+  p {
+    color: #f5f5f5;
+  }
+
+  .estado-button:disabled {
+    background-color: #444;
+    color: #bbb;
   }
 }
