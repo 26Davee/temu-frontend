@@ -116,21 +116,23 @@ function App() {
     return coincideEstado && coincideTexto && coincideFecha;
   });
 
-  return (
-    <div style={{ maxWidth: '720px', margin: 'auto', padding: '1rem', fontFamily: 'Segoe UI, sans-serif' }}>
-      <h1 style={{ fontSize: '2.2rem', marginBottom: '1.5rem', textAlign: 'center', color: '#1a1a1a' }}>📦 Gestión de Pedidos Temu</h1>
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-      <div className="form-container" style={{ marginBottom: '2rem', border: '1px solid #ccc', borderRadius: '10px', padding: '1.5rem', backgroundColor: '#f9f9f9' }}>
-        <h2 style={{ marginBottom: '1rem' }}>📝 Información del Pedido</h2>
+  return (
+    <div style={{ maxWidth: '720px', margin: 'auto', padding: '1rem', fontFamily: 'Segoe UI, sans-serif', color: isDark ? '#fff' : '#000' }}>
+      <h1 style={{ fontSize: '2.2rem', marginBottom: '1.5rem', textAlign: 'center', color: '#fff' }}>📦 Gestión de Pedidos Temu</h1>
+
+      <div style={{ marginBottom: '2rem', border: '1px solid #ccc', borderRadius: '10px', padding: '1.5rem', backgroundColor: isDark ? '#222' : '#f9f9f9' }}>
+        <h2 style={{ marginBottom: '1rem', color: isDark ? '#fff' : '#000' }}>📝 Información del Pedido</h2>
 
         <label>Nombre</label>
-        <input name="nombre" placeholder="Ej. Juan" value={nuevoPedido.nombre} onChange={handleChange} style={inputStyle} />
+        <input name="nombre" placeholder="David" value={nuevoPedido.nombre} onChange={handleChange} style={inputStyle} />
 
         <label>Apellido</label>
-        <input name="apellido" placeholder="Ej. Pérez" value={nuevoPedido.apellido} onChange={handleChange} style={inputStyle} />
+        <input name="apellido" placeholder="Espinoza" value={nuevoPedido.apellido} onChange={handleChange} style={inputStyle} />
 
         <label>Código de pedido (opcional)</label>
-        <input name="codigo" placeholder="Ej. PED1234" value={nuevoPedido.codigo} onChange={handleChange} style={inputStyle} />
+        <input name="codigo" placeholder="Dx000000007" value={nuevoPedido.codigo} onChange={handleChange} style={inputStyle} />
 
         <label>Fecha del pedido</label>
         <input name="fecha" type="date" value={nuevoPedido.fecha} onChange={handleChange} style={inputStyle} />
@@ -138,7 +140,7 @@ function App() {
         <label>Comentarios adicionales</label>
         <textarea name="comentarios" placeholder="Observaciones, preferencias, etc." value={nuevoPedido.comentarios} onChange={handleChange} style={textAreaStyle} />
 
-        <h3 style={{ marginTop: '2rem' }}>📦 Artículos del pedido</h3>
+        <h3 style={{ marginTop: '2rem', color: isDark ? '#fff' : '#000' }}>📦 Artículos del pedido</h3>
         {nuevoPedido.articulos.map((art, i) => (
           <div key={i} style={{ marginBottom: '1rem', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <input placeholder="Artículo" value={art.nombre} onChange={(e) => handleArticuloChange(i, 'nombre', e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '150px' }} />
@@ -147,12 +149,12 @@ function App() {
           </div>
         ))}
 
-        <button onClick={agregarArticulo} style={secondaryButton}>+ Agregar artículo</button>
+        <button onClick={agregarArticulo} style={{ ...secondaryButton, backgroundColor: isDark ? '#555' : '#eee', color: isDark ? '#fff' : '#000' }}>+ Agregar artículo</button>
         <br /><br />
         <button onClick={enviarPedido} style={mainButton}>✅ Enviar Pedido</button>
       </div>
 
-      <h2 style={{ marginTop: '2rem' }}>📚 Lista de Pedidos</h2>
+      <h2 style={{ marginTop: '2rem', color: isDark ? '#fff' : '#000' }}>📚 Lista de Pedidos</h2>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '1.5rem' }}>
         <input type="text" placeholder="Buscar por nombre" value={filtro.texto} onChange={e => setFiltro({ ...filtro, texto: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
@@ -163,7 +165,7 @@ function App() {
           ))}
         </select>
         <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
-        <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} style={secondaryButton}>🔄 Limpiar filtros</button>
+        <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} style={{ ...secondaryButton, backgroundColor: isDark ? '#555' : '#eee', color: isDark ? '#fff' : '#000' }}>🔄 Limpiar filtros</button>
       </div>
 
       <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -177,16 +179,8 @@ function App() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-              {ESTADOS.map((estado) => (
-                <button key={estado.label} onClick={() => actualizarEstado(pedido.id, estado.label)} disabled={pedido.estado === estado.label} style={{ padding: '5px 10px', fontSize: '0.75rem', borderRadius: '6px', backgroundColor: pedido.estado === estado.label ? '#1a73e8' : '#e0e0e0', color: pedido.estado === estado.label ? '#fff' : '#333', border: 'none', cursor: pedido.estado === estado.label ? 'default' : 'pointer' }}>
-                  {estado.icon} {estado.label}
-                </button>
-              ))}
-            </div>
-
             {pedido.mostrar && (
-              <div style={{ marginTop: '0.5rem', marginLeft: '1rem', backgroundColor: '#f1f1f1', padding: '0.8rem', borderRadius: '6px', fontSize: '0.95rem' }}>
+              <div style={{ marginTop: '0.5rem', marginLeft: '1rem', backgroundColor: isDark ? '#333' : '#f1f1f1', padding: '0.8rem', borderRadius: '6px', fontSize: '0.95rem', color: isDark ? '#eee' : '#000' }}>
                 <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
                 <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString() || 'Desconocida'}</p>
                 <p><strong>Total original:</strong> ${pedido.totalMonto}</p>
