@@ -116,12 +116,14 @@ function App() {
     return coincideEstado && coincideTexto && coincideFecha;
   });
 
-  return (
-    <div className="app-container">
-      <h1 className="titulo-principal">📦 Gestión de Pedidos Temu</h1>
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-      <div className="formulario-container">
-        <h2 className="formulario-titulo">📝 Información del Pedido</h2>
+  return (
+    <div style={{ maxWidth: '720px', margin: 'auto', padding: '1rem', fontFamily: 'Segoe UI, sans-serif', color: isDark ? '#fff' : '#000' }}>
+      <h1 style={{ fontSize: '2.2rem', marginBottom: '1.5rem', textAlign: 'center', color: '#fff' }}>📦 Gestión de Pedidos Temu</h1>
+
+      <div style={{ marginBottom: '2rem', border: '1px solid #ccc', borderRadius: '10px', padding: '1.5rem', backgroundColor: isDark ? '#222' : '#f9f9f9' }}>
+        <h2 style={{ marginBottom: '1rem', color: isDark ? '#fff' : '#000' }}>📝 Información del Pedido</h2>
 
         <label>Nombre</label>
         <input name="nombre" placeholder="David" value={nuevoPedido.nombre} onChange={handleChange} style={inputStyle} />
@@ -138,7 +140,7 @@ function App() {
         <label>Comentarios adicionales</label>
         <textarea name="comentarios" placeholder="Observaciones, preferencias, etc." value={nuevoPedido.comentarios} onChange={handleChange} style={textAreaStyle} />
 
-        <h3 style={{ marginTop: '2rem' }}>📦 Artículos del pedido</h3>
+        <h3 style={{ marginTop: '2rem', color: isDark ? '#fff' : '#000' }}>📦 Artículos del pedido</h3>
         {nuevoPedido.articulos.map((art, i) => (
           <div key={i} style={{ marginBottom: '1rem', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <input placeholder="Artículo" value={art.nombre} onChange={(e) => handleArticuloChange(i, 'nombre', e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '150px' }} />
@@ -147,12 +149,12 @@ function App() {
           </div>
         ))}
 
-        <button onClick={agregarArticulo} className="btn-secundario">+ Agregar artículo</button>
+        <button onClick={agregarArticulo} style={{ ...secondaryButton, backgroundColor: isDark ? '#555' : '#eee', color: isDark ? '#fff' : '#000' }}>+ Agregar artículo</button>
         <br /><br />
-        <button onClick={enviarPedido} className="btn-principal">✅ Enviar Pedido</button>
+        <button onClick={enviarPedido} style={mainButton}>✅ Enviar Pedido</button>
       </div>
 
-      <h2 style={{ marginTop: '2rem' }}>📚 Lista de Pedidos</h2>
+      <h2 style={{ marginTop: '2rem', color: isDark ? '#fff' : '#000' }}>📚 Lista de Pedidos</h2>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '1.5rem' }}>
         <input type="text" placeholder="Buscar por nombre" value={filtro.texto} onChange={e => setFiltro({ ...filtro, texto: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
@@ -163,7 +165,7 @@ function App() {
           ))}
         </select>
         <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} style={{ ...inputStyle, flex: 1 }} />
-        <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} className="btn-secundario">🔄 Limpiar filtros</button>
+        <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} style={{ ...secondaryButton, backgroundColor: isDark ? '#555' : '#eee', color: isDark ? '#fff' : '#000' }}>🔄 Limpiar filtros</button>
       </div>
 
       <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -178,7 +180,7 @@ function App() {
             </div>
 
             {pedido.mostrar && (
-              <div style={{ marginTop: '0.5rem', marginLeft: '1rem', backgroundColor: 'var(--detalle-bg)', color: 'var(--detalle-text)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.95rem' }}>
+              <div style={{ marginTop: '0.5rem', marginLeft: '1rem', backgroundColor: isDark ? '#333' : '#f1f1f1', padding: '0.8rem', borderRadius: '6px', fontSize: '0.95rem', color: isDark ? '#eee' : '#000' }}>
                 <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
                 <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString() || 'Desconocida'}</p>
                 <p><strong>Total original:</strong> ${pedido.totalMonto}</p>
@@ -208,6 +210,24 @@ const textAreaStyle = {
   ...inputStyle,
   height: '80px',
   resize: 'vertical'
+};
+
+const mainButton = {
+  padding: '10px 20px',
+  borderRadius: '8px',
+  border: 'none',
+  backgroundColor: '#1a73e8',
+  color: '#fff',
+  fontWeight: 'bold',
+  cursor: 'pointer'
+};
+
+const secondaryButton = {
+  padding: '6px 12px',
+  borderRadius: '6px',
+  border: '1px solid #aaa',
+  backgroundColor: '#eee',
+  cursor: 'pointer'
 };
 
 export default App;
