@@ -48,17 +48,44 @@ function App() {
   };
 
   const enviarPedido = async () => {
-    const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
-    const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
-    const body = {
-      familiar,
-      totalMonto,
-      fecha: nuevoPedido.fecha,
-      codigo: nuevoPedido.codigo,
-      comentarios: nuevoPedido.comentarios,
-      estado: nuevoPedido.estado,
-      articulos: nuevoPedido.articulos
-    };
+  const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
+  const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
+  const body = {
+    familiar,
+    totalMonto,
+    fecha: nuevoPedido.fecha,
+    codigo: nuevoPedido.codigo,
+    comentarios: nuevoPedido.comentarios,
+    estado: nuevoPedido.estado,
+    articulos: nuevoPedido.articulos
+  };
+
+  console.log("📦 Enviando pedido:", body); // <- esto te ayuda a ver qué se está enviando
+
+  try {
+    const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!respuesta.ok) {
+      const error = await respuesta.json();
+      console.error("❌ Error desde el servidor:", error);
+      throw new Error(error.detalle || error.error || 'Error inesperado al enviar el pedido');
+    }
+
+    const data = await respuesta.json();
+    alert("✅ Pedido enviado con éxito");
+    console.log("🎉 Respuesta del servidor:", data);
+  } catch (error) {
+    console.error("🚨 Error en envío:", error);
+    alert("Error al enviar pedido: " + error.message);
+  }
+};
+
 
     try {
       const res = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
