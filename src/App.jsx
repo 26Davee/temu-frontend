@@ -9,8 +9,8 @@ function App() {
     apellido: '',
     codigo: '',
     fecha: new Date().toISOString().split('T')[0],
-    comentarios: '',
     estado: 'PENDIENTE',
+    comentarios: '',
     articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
   });
 
@@ -69,13 +69,8 @@ function App() {
       const data = await res.json();
       setPedidos([data, ...pedidos]);
       setNuevoPedido({
-        nombre: '',
-        apellido: '',
-        codigo: '',
-        fecha: new Date().toISOString().split('T')[0],
-        comentarios: '',
-        estado: 'PENDIENTE',
-        articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
+        nombre: '', apellido: '', codigo: '', fecha: new Date().toISOString().split('T')[0],
+        estado: 'PENDIENTE', comentarios: '', articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
       });
     } catch (error) {
       alert('Error al enviar pedido');
@@ -117,98 +112,97 @@ function App() {
   });
 
   return (
-    <div className="app-container">
-      <h1 className="app-title">📦 Gestión de Pedidos Temu</h1>
+    <main className="container">
+      <header className="section header-section">
+        <h1 className="title">📦 Gestión de Pedidos Temu</h1>
+      </header>
 
-      <div className="form-container">
-        <h2>📝 Información del Pedido</h2>
+      <section className="section form-section">
+        <h2 className="subtitle">📝 Nuevo Pedido</h2>
+        <div className="form-grid">
+          <label>Nombre</label>
+          <input name="nombre" placeholder="David" value={nuevoPedido.nombre} onChange={handleChange} />
 
-        <label>Nombre</label>
-        <input name="nombre" placeholder="Ej. David" value={nuevoPedido.nombre} onChange={handleChange} className="input" />
+          <label>Apellido</label>
+          <input name="apellido" placeholder="Espinoza" value={nuevoPedido.apellido} onChange={handleChange} />
 
-        <label>Apellido</label>
-        <input name="apellido" placeholder="Ej. Espinoza" value={nuevoPedido.apellido} onChange={handleChange} className="input" />
+          <label>Código</label>
+          <input name="codigo" placeholder="Dx000000007" value={nuevoPedido.codigo} onChange={handleChange} />
 
-        <label>Código de pedido (opcional)</label>
-        <input name="codigo" placeholder="Dx000000007" value={nuevoPedido.codigo} onChange={handleChange} className="input" />
+          <label>Fecha</label>
+          <input name="fecha" type="date" value={nuevoPedido.fecha} onChange={handleChange} />
 
-        <label>Fecha del pedido</label>
-        <input name="fecha" type="date" value={nuevoPedido.fecha} onChange={handleChange} className="input" />
+          <label>Estado</label>
+          <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
+            {ESTADOS.map(est => (
+              <option key={est.label} value={est.label}>{est.icon} {est.label}</option>
+            ))}
+          </select>
 
-        <label>Comentarios adicionales</label>
-        <textarea name="comentarios" placeholder="Observaciones, preferencias, etc." value={nuevoPedido.comentarios} onChange={handleChange} className="textarea" />
+          <label>Comentarios</label>
+          <textarea name="comentarios" placeholder="Observaciones o detalles" value={nuevoPedido.comentarios} onChange={handleChange} />
+        </div>
 
-        <label>Estado inicial</label>
-        <select name="estado" value={nuevoPedido.estado} onChange={handleChange} className="input">
-          {ESTADOS.map(e => (
-            <option key={e.label} value={e.label}>{e.icon} {e.label}</option>
-          ))}
-        </select>
-
-        <h3>📦 Artículos del pedido</h3>
+        <h3>📦 Artículos</h3>
         {nuevoPedido.articulos.map((art, i) => (
           <div key={i} className="articulo-row">
-            <input placeholder="Artículo" value={art.nombre} onChange={(e) => handleArticuloChange(i, 'nombre', e.target.value)} className="input flex" />
-            <input type="number" placeholder="Cantidad" value={art.cantidad} onChange={(e) => handleArticuloChange(i, 'cantidad', e.target.value)} className="input small" />
-            <input type="number" placeholder="Precio" value={art.precioUnit} onChange={(e) => handleArticuloChange(i, 'precioUnit', e.target.value)} className="input small" />
+            <input placeholder="Artículo" value={art.nombre} onChange={(e) => handleArticuloChange(i, 'nombre', e.target.value)} />
+            <input type="number" placeholder="Cantidad" value={art.cantidad} onChange={(e) => handleArticuloChange(i, 'cantidad', e.target.value)} />
+            <input type="number" placeholder="Precio" value={art.precioUnit} onChange={(e) => handleArticuloChange(i, 'precioUnit', e.target.value)} />
           </div>
         ))}
+        <button onClick={agregarArticulo} className="btn-secondary">+ Agregar artículo</button>
+        <button onClick={enviarPedido} className="btn-primary">✅ Enviar Pedido</button>
+      </section>
 
-        <button onClick={agregarArticulo} className="secondary-button">+ Agregar artículo</button>
-        <br /><br />
-        <button onClick={enviarPedido} className="main-button">✅ Enviar Pedido</button>
-      </div>
+      <section className="section">
+        <h2 className="subtitle">📚 Lista de Pedidos</h2>
+        <div className="filter-bar">
+          <input type="text" placeholder="Buscar por nombre" value={filtro.texto} onChange={e => setFiltro({ ...filtro, texto: e.target.value })} />
+          <select value={filtro.estado} onChange={e => setFiltro({ ...filtro, estado: e.target.value })}>
+            <option value="">Todos</option>
+            {ESTADOS.map(e => (
+              <option key={e.label} value={e.label}>{e.icon} {e.label}</option>
+            ))}
+          </select>
+          <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} />
+          <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} className="btn-secondary">🔄 Limpiar filtros</button>
+        </div>
 
-      <h2 className="lista-titulo">📚 Lista de Pedidos</h2>
-
-      <div className="filtros">
-        <input type="text" placeholder="Buscar por nombre" value={filtro.texto} onChange={e => setFiltro({ ...filtro, texto: e.target.value })} className="input flex" />
-        <select value={filtro.estado} onChange={e => setFiltro({ ...filtro, estado: e.target.value })} className="input flex">
-          <option value="">Todos los estados</option>
-          {ESTADOS.map(e => (
-            <option key={e.label} value={e.label}>{e.icon} {e.label}</option>
+        <ul className="pedido-list">
+          {pedidosFiltrados.map(pedido => (
+            <li key={pedido.id} className="pedido-item">
+              <div className="pedido-header">
+                <span><strong>{pedido.familiar}</strong> — {pedido.estado} — ${pedido.totalMonto}</span>
+                <div>
+                  <button onClick={() => setPedidos(pedidos.map(p => p.id === pedido.id ? { ...p, mostrar: !p.mostrar } : p))}>👁 Ver</button>
+                  <button onClick={() => eliminarPedido(pedido.id)} className="btn-delete">🗑 Eliminar</button>
+                </div>
+              </div>
+              <div className="estado-buttons">
+                {ESTADOS.map((estado) => (
+                  <button key={estado.label} onClick={() => actualizarEstado(pedido.id, estado.label)} disabled={pedido.estado === estado.label} className={pedido.estado === estado.label ? 'btn-selected' : ''}>
+                    {estado.icon} {estado.label}
+                  </button>
+                ))}
+              </div>
+              {pedido.mostrar && (
+                <div className="pedido-detalles">
+                  <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
+                  <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString()}</p>
+                  <p><strong>Total:</strong> ${pedido.totalMonto}</p>
+                  <ul>
+                    {pedido.articulos.map((art, i) => (
+                      <li key={i}>🛒 {art.nombre} — {art.cantidad} × ${art.precioUnit}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </li>
           ))}
-        </select>
-        <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} className="input flex" />
-        <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} className="secondary-button">🔄 Limpiar filtros</button>
-      </div>
-
-      <ul className="lista-pedidos">
-        {pedidosFiltrados.map((pedido) => (
-          <li key={pedido.id} className="pedido-item">
-            <div className="pedido-header">
-              <span><strong>{pedido.familiar}</strong> — {pedido.estado} — ${pedido.totalMonto}</span>
-              <div>
-                <button onClick={() => setPedidos(pedidos.map(p => p.id === pedido.id ? { ...p, mostrar: !p.mostrar } : p))}>👁 Ver</button>
-                <button onClick={() => eliminarPedido(pedido.id)} className="btn-eliminar">🗑 Eliminar</button>
-              </div>
-            </div>
-
-            <div className="estado-botones">
-              {ESTADOS.map((estado) => (
-                <button key={estado.label} onClick={() => actualizarEstado(pedido.id, estado.label)} disabled={pedido.estado === estado.label} className={pedido.estado === estado.label ? 'estado-activo' : 'estado-normal'}>
-                  {estado.icon} {estado.label}
-                </button>
-              ))}
-            </div>
-
-            {pedido.mostrar && (
-              <div className="pedido-detalle">
-                <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
-                <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString() || 'Desconocida'}</p>
-                <p><strong>Total original:</strong> ${pedido.totalMonto}</p>
-                <p><strong>Artículos:</strong></p>
-                <ul>
-                  {pedido.articulos?.map((art, i) => (
-                    <li key={i}>🛒 {art.nombre} — {art.cantidad} × ${art.precioUnit}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+        </ul>
+      </section>
+    </main>
   );
 }
 
