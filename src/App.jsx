@@ -120,7 +120,7 @@ function App() {
     <div style={{ maxWidth: '720px', margin: 'auto', padding: '1rem', fontFamily: 'Segoe UI, sans-serif' }}>
       <h1 style={{ fontSize: '2.2rem', marginBottom: '1.5rem', textAlign: 'center', color: '#1a1a1a' }}>📦 Gestión de Pedidos Temu</h1>
 
-      <div style={{ marginBottom: '2rem', border: '1px solid #ccc', borderRadius: '10px', padding: '1.5rem', backgroundColor: '#f9f9f9' }}>
+      <div className="form-container" style={{ marginBottom: '2rem', border: '1px solid #ccc', borderRadius: '10px', padding: '1.5rem', backgroundColor: '#f9f9f9' }}>
         <h2 style={{ marginBottom: '1rem' }}>📝 Información del Pedido</h2>
 
         <label>Nombre</label>
