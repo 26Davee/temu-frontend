@@ -5,7 +5,7 @@ import Estadisticas from './Estadisticas';
 function App() {
   const [mostrarEstadisticas, setMostrarEstadisticas] = useState(false);
   const [pedidos, setPedidos] = useState([]);
-  const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '' });
+  const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '', codigo: '' });
   const [nuevoPedido, setNuevoPedido] = useState({
     nombre: '',
     apellido: '',
@@ -66,7 +66,6 @@ function App() {
       familiar,
       totalMonto,
       fecha: nuevoPedido.fecha,
-      codigo: nuevoPedido.codigo,
       comentarios: nuevoPedido.comentarios,
       estado: nuevoPedido.estado,
       articulos: nuevoPedido.articulos
@@ -143,7 +142,8 @@ function App() {
         const coincideEstado = filtro.estado ? p.estado === filtro.estado : true;
         const coincideTexto = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
         const coincideFecha = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
-        return coincideEstado && coincideTexto && coincideFecha;
+        const coincideCodigo = filtro.codigo ? p.codigo?.toLowerCase().includes(filtro.codigo.toLowerCase()) : true;
+        return coincideEstado && coincideTexto && coincideFecha && coincideCodigo;
       })
     : [];
 
@@ -170,7 +170,6 @@ function App() {
             <label>Código</label>
             <input name="codigo" value={nuevoPedido.codigo} readOnly placeholder="Generado automáticamente" />
           </div>
-
 
           <div className="form-group">
             <label>Fecha</label>
@@ -210,6 +209,7 @@ function App() {
         <h2 className="subtitle">📚 Lista de Pedidos</h2>
         <div className="filter-bar">
           <input type="text" placeholder="Buscar por nombre" value={filtro.texto} onChange={e => setFiltro({ ...filtro, texto: e.target.value })} />
+          <input type="text" placeholder="Buscar por código" value={filtro.codigo} onChange={e => setFiltro({ ...filtro, codigo: e.target.value })} />
           <select value={filtro.estado} onChange={e => setFiltro({ ...filtro, estado: e.target.value })}>
             <option value="">Todos</option>
             {ESTADOS.map(e => (
@@ -217,7 +217,7 @@ function App() {
             ))}
           </select>
           <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} />
-          <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '' })} className="btn-secondary">🔄 Limpiar filtros</button>
+          <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '', codigo: '' })} className="btn-secondary">🔄 Limpiar filtros</button>
         </div>
 
         <ul className="pedido-list">
@@ -239,6 +239,7 @@ function App() {
               </div>
               {pedido.mostrar && (
                 <div className="pedido-detalles">
+                  <p><strong>Código:</strong> {pedido.codigo}</p>
                   <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
                   <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString()}</p>
                   <p><strong>Total:</strong> ${pedido.totalMonto}</p>
