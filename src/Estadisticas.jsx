@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip,
+  PieChart, Pie, Cell, Legend, ResponsiveContainer
+} from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6384'];
 
@@ -7,7 +10,7 @@ const Estadisticas = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/estadisticas')
+    fetch('https://temu-pedidos-production.up.railway.app/estadisticas')
       .then(res => res.json())
       .then(setData)
       .catch(err => console.error('Error al cargar estadísticas', err));
@@ -37,33 +40,37 @@ const Estadisticas = () => {
 
       <div className="grafico">
         <h3>📅 Pedidos por Mes</h3>
-        <BarChart width={350} height={250} data={datosBarra}>
-          <XAxis dataKey="mes" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="total" fill="#0088FE" />
-        </BarChart>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={datosBarra}>
+            <XAxis dataKey="mes" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="total" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       <div className="grafico">
         <h3>📦 Pedidos por Estado</h3>
-        <PieChart width={300} height={250}>
-          <Pie
-            data={datosTorta}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={80}
-            label
-          >
-            {datosTorta.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Legend />
-          <Tooltip />
-        </PieChart>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={datosTorta}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              label
+            >
+              {datosTorta.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Legend />
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
