@@ -6,68 +6,6 @@ body {
   color: #1a1a1a;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
-    color: #f5f5f5;
-  }
-
-  input,
-  select,
-  textarea {
-    background-color: #2a2a2a;
-    color: #f5f5f5;
-    border-color: #555;
-  }
-
-  button {
-    background-color: #333;
-    color: #fff;
-  }
-
-  .form-section,
-  .pedido-detalles,
-  .pedido-item,
-  .header-section,
-  .contenedor-app,
-  .form-container,
-  .pedido-detalle,
-  .pedido-card,
-  .section {
-    background-color: #1f1f1f;
-    color: #f5f5f5;
-    border-color: #333;
-  }
-
-  .title,
-  .subtitle,
-  label,
-  h1,
-  h2,
-  h3,
-  span,
-  p,
-  .pedido-header span,
-  .pedido-detalles p,
-  .pedido-detalles li {
-    color: #f5f5f5;
-  }
-
-  .pedido-monto span,
-  .pedido-estado button {
-    color: #fff;
-  }
-
-  .estado-button {
-    background-color: #444;
-  }
-
-  .header-section {
-    background: linear-gradient(to right, #1a73e8, #4285f4);
-    color: white;
-  }
-}
-
 .container {
   max-width: 900px;
   margin: 2rem auto;
@@ -223,5 +161,76 @@ textarea {
   }
   .container {
     padding: 1rem;
+  }
+}
+
+/* 🌙 MODO OSCURO */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #f5f5f5;
+  }
+
+  input,
+  textarea,
+  select {
+    background-color: #2a2a2a;
+    color: #f5f5f5;
+    border-color: #555;
+  }
+
+  button {
+    background-color: #333;
+    color: #fff;
+  }
+
+  .btn-secondary {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #fff;
+  }
+
+  .estado-button {
+    background-color: #444;
+  }
+
+  .section,
+  .pedido-item,
+  .pedido-detalles,
+  .form-section,
+  .contenedor-app,
+  .form-container,
+  .pedido-detalle,
+  .pedido-card {
+    background-color: #1f1f1f !important;
+    color: #f5f5f5;
+    border-color: #333;
+  }
+
+  .header-section {
+    background: linear-gradient(to right, #1a73e8, #4285f4);
+    color: white;
+  }
+
+  .title,
+  .subtitle,
+  label,
+  .form-grid label,
+  h1,
+  h2,
+  h3,
+  span,
+  p,
+  .pedido-header span,
+  .pedido-detalles p,
+  .pedido-detalles li,
+  .pedido-item span,
+  .pedido-item p {
+    color: #f5f5f5 !important;
+  }
+
+  .pedido-monto span,
+  .pedido-estado button {
+    color: #fff;
   }
 }
