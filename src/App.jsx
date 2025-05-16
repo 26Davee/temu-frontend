@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Estadisticas from './Estadisticas';
 
 function App() {
   const [pedidos, setPedidos] = useState([]);
@@ -249,6 +250,10 @@ function App() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="section">
+        <Estadisticas />
       </section>
     </main>
   );
