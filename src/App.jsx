@@ -56,6 +56,12 @@ function App() {
     }
   };
 
+  const eliminarClienteFrecuente = (cliente) => {
+    const actualizados = clientesFrecuentes.filter(c => c !== cliente);
+    setClientesFrecuentes(actualizados);
+    localStorage.setItem('clientesFrecuentes', JSON.stringify(actualizados));
+  };
+
   const seleccionarCliente = (cliente) => {
     const [nombre, ...apellidoArr] = cliente.split(' ');
     const apellido = apellidoArr.join(' ');
@@ -92,8 +98,6 @@ function App() {
       articulos: nuevoPedido.articulos
     };
 
-    console.log("📦 Enviando pedido:", body);
-
     try {
       const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
         method: 'POST',
@@ -105,30 +109,18 @@ function App() {
 
       if (!respuesta.ok) {
         const error = await respuesta.json();
-        console.error("❌ Error desde el servidor:", error);
         throw new Error(error.detalle || error.error || 'Error inesperado al enviar el pedido');
       }
 
       const data = await respuesta.json();
       alert("✅ Pedido enviado con éxito");
-      console.log("🎉 Respuesta del servidor:", data);
-
       guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
-
-      setPedidos((prevPedidos) => [data, ...(Array.isArray(prevPedidos) ? prevPedidos : [])]);
-
+      setPedidos([data, ...pedidos]);
       setNuevoPedido({
-        nombre: '',
-        apellido: '',
-        codigo: data.codigo || '',
-        fecha: new Date().toISOString().split('T')[0],
-        estado: 'PENDIENTE',
-        comentarios: '',
-        articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
+        nombre: '', apellido: '', codigo: data.codigo || '', fecha: new Date().toISOString().split('T')[0],
+        estado: 'PENDIENTE', comentarios: '', articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
       });
-
     } catch (error) {
-      console.error("🚨 Error en envío:", error);
       alert("Error al enviar pedido: " + error.message);
     }
   };
@@ -147,13 +139,9 @@ function App() {
   };
 
   const eliminarPedido = async (id) => {
-    const confirmar = window.confirm('¿Seguro que deseas eliminar este pedido?');
-    if (!confirmar) return;
-
+    if (!window.confirm('¿Seguro que deseas eliminar este pedido?')) return;
     try {
-      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}`, {
-        method: 'DELETE'
-      });
+      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}`, { method: 'DELETE' });
       setPedidos(pedidos.filter(p => p.id !== id));
     } catch (error) {
       alert('Error al eliminar el pedido');
@@ -181,13 +169,15 @@ function App() {
 
         {clientesFrecuentes.length > 0 && (
           <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label>Cliente frecuente:</label>
-            <select onChange={e => seleccionarCliente(e.target.value)} defaultValue="">
-              <option value="">Seleccionar cliente</option>
+            <label>Clientes frecuentes:</label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {clientesFrecuentes.map(cliente => (
-                <option key={cliente} value={cliente}>{cliente}</option>
+                <div key={cliente} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <button className="btn-secondary" onClick={() => seleccionarCliente(cliente)}>{cliente}</button>
+                  <button className="btn-delete" onClick={() => eliminarClienteFrecuente(cliente)}>✖</button>
+                </div>
               ))}
-            </select>
+            </div>
           </div>
         )}
 
@@ -196,33 +186,26 @@ function App() {
             <label>Nombre</label>
             <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} placeholder="David" />
           </div>
-
           <div className="form-group">
             <label>Apellido</label>
             <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} placeholder="Espinoza" />
           </div>
-
           <div className="form-group">
             <label>Código</label>
             <input name="codigo" value={nuevoPedido.codigo} readOnly placeholder="Generado automáticamente" />
           </div>
-
           <div className="form-group">
             <label>Fecha</label>
             <input type="date" name="fecha" value={nuevoPedido.fecha} onChange={handleChange} />
           </div>
-
           <div className="form-group">
             <label>Estado</label>
             <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
               {ESTADOS.map((e) => (
-                <option key={e.label} value={e.label}>
-                  {e.icon} {e.label}
-                </option>
+                <option key={e.label} value={e.label}>{e.icon} {e.label}</option>
               ))}
             </select>
           </div>
-
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label>Comentarios</label>
             <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} placeholder="Observaciones o detalles" />
