@@ -25,8 +25,18 @@ function App() {
   useEffect(() => {
     fetch('https://temu-pedidos-production.up.railway.app/pedidos')
       .then(res => res.json())
-      .then(data => setPedidos(data))
-      .catch(err => console.error('Error al cargar pedidos', err));
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPedidos(data);
+        } else {
+          console.warn("La respuesta de /pedidos no es un arreglo:", data);
+          setPedidos([]);
+        }
+      })
+      .catch(err => {
+        console.error('Error al cargar pedidos', err);
+        setPedidos([]);
+      });
   }, []);
 
   const handleChange = (e) => {
@@ -81,7 +91,8 @@ function App() {
       alert("✅ Pedido enviado con éxito");
       console.log("🎉 Respuesta del servidor:", data);
 
-      setPedidos([data, ...pedidos]);
+      setPedidos((prevPedidos) => [data, ...(Array.isArray(prevPedidos) ? prevPedidos : [])]);
+
       setNuevoPedido({
         nombre: '',
         apellido: '',
