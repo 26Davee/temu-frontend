@@ -195,3 +195,55 @@ textarea {
     padding: 1rem;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #f5f5f5;
+  }
+
+  .contenedor-app,
+  .form-container,
+  .pedido-detalle,
+  .pedido-card {
+    background-color: #1f1f1f;
+    color: #f5f5f5;
+    border-color: #333;
+  }
+
+  input,
+  textarea,
+  select {
+    background-color: #2a2a2a;
+    color: #f5f5f5;
+    border-color: #555;
+  }
+
+  button {
+    background-color: #333;
+    color: #fff;
+  }
+
+  label,
+  h1,
+  h2,
+  h3,
+  span,
+  p {
+    color: #f5f5f5;
+  }
+
+  .pedido-monto span,
+  .pedido-estado button {
+    color: #fff;
+  }
+
+  .pedido-detalle {
+    background-color: #242424;
+    color: #eee;
+  }
+
+  .estado-button {
+    background-color: #444;
+  }
+}
