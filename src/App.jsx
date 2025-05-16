@@ -5,6 +5,7 @@ import Estadisticas from './Estadisticas';
 function App() {
   const [mostrarEstadisticas, setMostrarEstadisticas] = useState(false);
   const [pedidos, setPedidos] = useState([]);
+  const [clientesFrecuentes, setClientesFrecuentes] = useState([]);
   const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '', codigo: '' });
   const [nuevoPedido, setNuevoPedido] = useState({
     nombre: '',
@@ -39,7 +40,27 @@ function App() {
         console.error('Error al cargar pedidos', err);
         setPedidos([]);
       });
+
+    const guardados = localStorage.getItem('clientesFrecuentes');
+    if (guardados) {
+      setClientesFrecuentes(JSON.parse(guardados));
+    }
   }, []);
+
+  const guardarClienteFrecuente = (nombre, apellido) => {
+    const cliente = `${nombre.trim()} ${apellido.trim()}`;
+    if (!clientesFrecuentes.includes(cliente)) {
+      const actualizados = [...clientesFrecuentes, cliente];
+      setClientesFrecuentes(actualizados);
+      localStorage.setItem('clientesFrecuentes', JSON.stringify(actualizados));
+    }
+  };
+
+  const seleccionarCliente = (cliente) => {
+    const [nombre, ...apellidoArr] = cliente.split(' ');
+    const apellido = apellidoArr.join(' ');
+    setNuevoPedido({ ...nuevoPedido, nombre, apellido });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,6 +112,8 @@ function App() {
       const data = await respuesta.json();
       alert("✅ Pedido enviado con éxito");
       console.log("🎉 Respuesta del servidor:", data);
+
+      guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
 
       setPedidos((prevPedidos) => [data, ...(Array.isArray(prevPedidos) ? prevPedidos : [])]);
 
@@ -155,6 +178,19 @@ function App() {
 
       <section className="section form-section">
         <h2 className="subtitle">📝 Nuevo Pedido</h2>
+
+        {clientesFrecuentes.length > 0 && (
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label>Cliente frecuente:</label>
+            <select onChange={e => seleccionarCliente(e.target.value)} defaultValue="">
+              <option value="">Seleccionar cliente</option>
+              {clientesFrecuentes.map(cliente => (
+                <option key={cliente} value={cliente}>{cliente}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="form-grid">
           <div className="form-group">
             <label>Nombre</label>
