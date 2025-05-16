@@ -29,8 +29,26 @@ body {
     background-color: #1c1c1c;
     border-color: #333;
   }
-  .title {
-    color: #ffffff;
+  .title,
+  .subtitle,
+  label,
+  span,
+  p,
+  strong,
+  .btn-primary,
+  .btn-secondary {
+    color: #f5f5f5 !important;
+  }
+  .pedido-header {
+    color: #f5f5f5;
+  }
+  .estado-buttons button {
+    background-color: #333;
+    color: #fff;
+  }
+  .pedido-detalles {
+    background-color: #2a2a2a;
+    border-color: #444;
   }
 }
 
@@ -188,14 +206,4 @@ textarea {
   .container {
     padding: 1rem;
   }
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  margin-bottom: 0.4rem;
-  font-weight: 500;
 }
