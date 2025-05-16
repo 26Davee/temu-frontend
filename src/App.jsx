@@ -98,7 +98,7 @@ function App() {
       setNuevoPedido({
         nombre: '',
         apellido: '',
-        codigo: '',
+        codigo: data.codigo || '',
         fecha: new Date().toISOString().split('T')[0],
         estado: 'PENDIENTE',
         comentarios: '',
@@ -168,8 +168,9 @@ function App() {
 
           <div className="form-group">
             <label>Código</label>
-            <input name="codigo" value={nuevoPedido.codigo} onChange={handleChange} placeholder="Dx000000007" />
+            <input name="codigo" value={nuevoPedido.codigo} readOnly placeholder="Generado automáticamente" />
           </div>
+
 
           <div className="form-group">
             <label>Fecha</label>
