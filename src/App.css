@@ -189,3 +189,13 @@ textarea {
     padding: 1rem;
   }
 }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}

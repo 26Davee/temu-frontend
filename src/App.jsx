@@ -119,29 +119,44 @@ function App() {
 
       <section className="section form-section">
         <h2 className="subtitle">📝 Nuevo Pedido</h2>
-        <div className="form-grid">
-          <label>Nombre</label>
-          <input name="nombre" placeholder="David" value={nuevoPedido.nombre} onChange={handleChange} />
+<div className="form-grid">
+  <div className="form-group">
+    <label>Nombre</label>
+    <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} placeholder="David" />
+  </div>
 
-          <label>Apellido</label>
-          <input name="apellido" placeholder="Espinoza" value={nuevoPedido.apellido} onChange={handleChange} />
+  <div className="form-group">
+    <label>Apellido</label>
+    <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} placeholder="Espinoza" />
+  </div>
 
-          <label>Código</label>
-          <input name="codigo" placeholder="Dx000000007" value={nuevoPedido.codigo} onChange={handleChange} />
+  <div className="form-group">
+    <label>Código</label>
+    <input name="codigo" value={nuevoPedido.codigo} onChange={handleChange} placeholder="Dx000000007" />
+  </div>
 
-          <label>Fecha</label>
-          <input name="fecha" type="date" value={nuevoPedido.fecha} onChange={handleChange} />
+  <div className="form-group">
+    <label>Fecha</label>
+    <input type="date" name="fecha" value={nuevoPedido.fecha} onChange={handleChange} />
+  </div>
 
-          <label>Estado</label>
-          <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
-            {ESTADOS.map(est => (
-              <option key={est.label} value={est.label}>{est.icon} {est.label}</option>
-            ))}
-          </select>
+  <div className="form-group">
+    <label>Estado</label>
+    <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
+      {ESTADOS.map((e) => (
+        <option key={e.label} value={e.label}>
+          {e.icon} {e.label}
+        </option>
+      ))}
+    </select>
+  </div>
 
-          <label>Comentarios</label>
-          <textarea name="comentarios" placeholder="Observaciones o detalles" value={nuevoPedido.comentarios} onChange={handleChange} />
-        </div>
+  <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+    <label>Comentarios</label>
+    <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} placeholder="Observaciones o detalles" />
+  </div>
+</div>
+
 
         <h3>📦 Artículos</h3>
         {nuevoPedido.articulos.map((art, i) => (
