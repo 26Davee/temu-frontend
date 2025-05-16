@@ -30,16 +30,11 @@ body {
     border-color: #333;
   }
   .title,
-  .subtitle,
   label,
-  span,
-  p,
-  h2,
-  h3 {
-    color: #f5f5f5;
-  }
-  .section {
-    background-color: #1a1a1a;
+  .pedido-header span,
+  .pedido-detalles p,
+  .pedido-detalles li {
+    color: #ffffff;
   }
 }
 
@@ -52,7 +47,7 @@ body {
 .section {
   margin-bottom: 2.5rem;
   padding: 1.8rem;
-  background-color: #fff;
+  background-color: #f1f1f1;
   border-radius: 16px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
@@ -94,8 +89,6 @@ textarea {
   font-size: 1rem;
   width: 100%;
   box-sizing: border-box;
-  background-color: #fff;
-  color: #000;
 }
 
 textarea {
@@ -129,7 +122,7 @@ textarea {
   border-radius: 10px;
   cursor: pointer;
   margin-top: 0.5rem;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .btn-delete {
@@ -165,7 +158,7 @@ textarea {
   border-radius: 12px;
   padding: 1.2rem;
   margin-bottom: 1.8rem;
-  background-color: #fff;
+  background-color: #f1f1f1;
 }
 
 .pedido-header {
@@ -181,6 +174,7 @@ textarea {
   border-radius: 10px;
   margin-top: 1rem;
   font-size: 0.96rem;
+  color: #1a1a1a;
 }
 
 .filter-bar {
