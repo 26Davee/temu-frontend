@@ -104,12 +104,15 @@ function App() {
     }
   };
 
-  const pedidosFiltrados = pedidos.filter(p => {
-    const coincideEstado = filtro.estado ? p.estado === filtro.estado : true;
-    const coincideTexto = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
-    const coincideFecha = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
-    return coincideEstado && coincideTexto && coincideFecha;
-  });
+  const pedidosFiltrados = Array.isArray(pedidos)
+  ? pedidos.filter(p => {
+      const coincideEstado = filtro.estado ? p.estado === filtro.estado : true;
+      const coincideTexto = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
+      const coincideFecha = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
+      return coincideEstado && coincideTexto && coincideFecha;
+    })
+  : [];
+
 
   return (
     <main className="container">
