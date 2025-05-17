@@ -75,38 +75,51 @@ function App() {
     });
   };
 
-  const enviarPedido = async () => {
-    const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
-    const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
+const enviarPedido = async () => {
+  const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
+  const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
 
-    const formData = new FormData();
-    formData.append('familiar', familiar);
-    formData.append('totalMonto', totalMonto);
-    formData.append('fecha', nuevoPedido.fecha);
-    formData.append('comentarios', nuevoPedido.comentarios);
-    formData.append('estado', nuevoPedido.estado);
-    formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
-    imagenes.forEach((img) => formData.append('imagenes', img));
+  const formData = new FormData();
+  formData.append('familiar', familiar);
+  formData.append('totalMonto', totalMonto);
+  formData.append('fecha', nuevoPedido.fecha);
+  formData.append('estado', nuevoPedido.estado);
+  formData.append('comentarios', nuevoPedido.comentarios);
+  formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
+  imagenes.forEach((img) => formData.append('imagenes', img));
 
-    try {
-      const res = await fetch('http://localhost:3000/pedidos-con-foto', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
-      alert("✅ Pedido enviado con éxito");
-      guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
-      setPedidos([data, ...pedidos]);
-      setNuevoPedido({
-        nombre: '', apellido: '', codigo: data.codigo || '', fecha: new Date().toISOString().split('T')[0],
-        estado: 'PENDIENTE', comentarios: '', articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
-      });
-      setImagenes([]);
-    } catch (error) {
-      alert('Error: ' + error.message);
+  try {
+    const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos-con-foto', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!respuesta.ok) {
+      const error = await respuesta.json();
+      throw new Error(error.detalle || error.error || 'Error inesperado');
     }
-  };
+
+    const data = await respuesta.json();
+    alert("✅ Pedido enviado con éxito");
+
+    setPedidos([data, ...pedidos]);
+    guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
+
+    setNuevoPedido({
+      nombre: '',
+      apellido: '',
+      codigo: data.codigo || '',
+      fecha: new Date().toISOString().split('T')[0],
+      estado: 'PENDIENTE',
+      comentarios: '',
+      articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
+    });
+    setImagenes([]);
+  } catch (error) {
+    alert("Error al enviar pedido: " + error.message);
+  }
+};
+
 
   const actualizarEstado = async (id, estadoNuevo) => {
     try {
