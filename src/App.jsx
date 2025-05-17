@@ -6,6 +6,7 @@ function App() {
   const [mostrarEstadisticas, setMostrarEstadisticas] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [clientesFrecuentes, setClientesFrecuentes] = useState([]);
+  const [imagenAmpliada, setImagenAmpliada] = useState(null);
   const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '', codigo: '' });
   const [nuevoPedido, setNuevoPedido] = useState({
     nombre: '',
@@ -16,6 +17,7 @@ function App() {
     comentarios: '',
     articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
   });
+  const [imagenes, setImagenes] = useState([]);
 
   const ESTADOS = [
     { label: 'PENDIENTE', icon: '🕐' },
@@ -26,25 +28,13 @@ function App() {
   ];
 
   useEffect(() => {
-    fetch('https://temu-pedidos-production.up.railway.app/pedidos')
+    fetch('http://localhost:3000/pedidos')
       .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setPedidos(data);
-        } else {
-          console.warn("La respuesta de /pedidos no es un arreglo:", data);
-          setPedidos([]);
-        }
-      })
-      .catch(err => {
-        console.error('Error al cargar pedidos', err);
-        setPedidos([]);
-      });
+      .then(data => Array.isArray(data) ? setPedidos(data) : setPedidos([]))
+      .catch(() => setPedidos([]));
 
     const guardados = localStorage.getItem('clientesFrecuentes');
-    if (guardados) {
-      setClientesFrecuentes(JSON.parse(guardados));
-    }
+    if (guardados) setClientesFrecuentes(JSON.parse(guardados));
   }, []);
 
   const guardarClienteFrecuente = (nombre, apellido) => {
@@ -64,8 +54,7 @@ function App() {
 
   const seleccionarCliente = (cliente) => {
     const [nombre, ...apellidoArr] = cliente.split(' ');
-    const apellido = apellidoArr.join(' ');
-    setNuevoPedido({ ...nuevoPedido, nombre, apellido });
+    setNuevoPedido({ ...nuevoPedido, nombre, apellido: apellidoArr.join(' ') });
   };
 
   const handleChange = (e) => {
@@ -89,30 +78,23 @@ function App() {
   const enviarPedido = async () => {
     const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
     const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
-    const body = {
-      familiar,
-      totalMonto,
-      fecha: nuevoPedido.fecha,
-      comentarios: nuevoPedido.comentarios,
-      estado: nuevoPedido.estado,
-      articulos: nuevoPedido.articulos
-    };
+
+    const formData = new FormData();
+    formData.append('familiar', familiar);
+    formData.append('totalMonto', totalMonto);
+    formData.append('fecha', nuevoPedido.fecha);
+    formData.append('comentarios', nuevoPedido.comentarios);
+    formData.append('estado', nuevoPedido.estado);
+    formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
+    imagenes.forEach((img) => formData.append('imagenes', img));
 
     try {
-      const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
+      const res = await fetch('http://localhost:3000/pedidos-con-foto', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
+        body: formData
       });
-
-      if (!respuesta.ok) {
-        const error = await respuesta.json();
-        throw new Error(error.detalle || error.error || 'Error inesperado al enviar el pedido');
-      }
-
-      const data = await respuesta.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
       alert("✅ Pedido enviado con éxito");
       guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
       setPedidos([data, ...pedidos]);
@@ -120,20 +102,20 @@ function App() {
         nombre: '', apellido: '', codigo: data.codigo || '', fecha: new Date().toISOString().split('T')[0],
         estado: 'PENDIENTE', comentarios: '', articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
       });
+      setImagenes([]);
     } catch (error) {
-      alert("Error al enviar pedido: " + error.message);
+      alert('Error: ' + error.message);
     }
   };
 
   const actualizarEstado = async (id, estadoNuevo) => {
     try {
-      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}/estado`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch(`http://localhost:3000/pedidos/${id}/estado`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: estadoNuevo })
       });
       setPedidos(pedidos.map(p => p.id === id ? { ...p, estado: estadoNuevo } : p));
-    } catch (error) {
+    } catch {
       alert('Error al cambiar estado');
     }
   };
@@ -141,22 +123,20 @@ function App() {
   const eliminarPedido = async (id) => {
     if (!window.confirm('¿Seguro que deseas eliminar este pedido?')) return;
     try {
-      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:3000/pedidos/${id}`, { method: 'DELETE' });
       setPedidos(pedidos.filter(p => p.id !== id));
-    } catch (error) {
+    } catch {
       alert('Error al eliminar el pedido');
     }
   };
 
-  const pedidosFiltrados = Array.isArray(pedidos)
-    ? pedidos.filter(p => {
-        const coincideEstado = filtro.estado ? p.estado === filtro.estado : true;
-        const coincideTexto = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
-        const coincideFecha = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
-        const coincideCodigo = filtro.codigo ? p.codigo?.toLowerCase().includes(filtro.codigo.toLowerCase()) : true;
-        return coincideEstado && coincideTexto && coincideFecha && coincideCodigo;
-      })
-    : [];
+  const pedidosFiltrados = pedidos.filter(p => {
+    const c1 = filtro.estado ? p.estado === filtro.estado : true;
+    const c2 = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
+    const c3 = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
+    const c4 = filtro.codigo ? p.codigo?.toLowerCase().includes(filtro.codigo.toLowerCase()) : true;
+    return c1 && c2 && c3 && c4;
+  });
 
   return (
     <main className="container">
@@ -184,11 +164,11 @@ function App() {
         <div className="form-grid">
           <div className="form-group">
             <label>Nombre</label>
-            <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} placeholder="David" />
+            <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} />
           </div>
           <div className="form-group">
             <label>Apellido</label>
-            <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} placeholder="Espinoza" />
+            <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} />
           </div>
           <div className="form-group">
             <label>Código</label>
@@ -201,15 +181,18 @@ function App() {
           <div className="form-group">
             <label>Estado</label>
             <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
-              {ESTADOS.map((e) => (
-                <option key={e.label} value={e.label}>{e.icon} {e.label}</option>
-              ))}
+              {ESTADOS.map(e => <option key={e.label} value={e.label}>{e.icon} {e.label}</option>)}
             </select>
           </div>
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label>Comentarios</label>
-            <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} placeholder="Observaciones o detalles" />
+            <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} />
           </div>
+        </div>
+
+        <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+          <label>📎 Adjuntar foto del pedido (opcional)</label>
+          <input type="file" multiple accept="image/*" onChange={e => setImagenes([...e.target.files])} />
         </div>
 
         <h3>📦 Artículos</h3>
@@ -231,9 +214,7 @@ function App() {
           <input type="text" placeholder="Buscar por código" value={filtro.codigo} onChange={e => setFiltro({ ...filtro, codigo: e.target.value })} />
           <select value={filtro.estado} onChange={e => setFiltro({ ...filtro, estado: e.target.value })}>
             <option value="">Todos</option>
-            {ESTADOS.map(e => (
-              <option key={e.label} value={e.label}>{e.icon} {e.label}</option>
-            ))}
+            {ESTADOS.map(e => <option key={e.label} value={e.label}>{e.icon} {e.label}</option>)}
           </select>
           <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} />
           <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '', codigo: '' })} className="btn-secondary">🔄 Limpiar filtros</button>
@@ -250,7 +231,7 @@ function App() {
                 </div>
               </div>
               <div className="estado-buttons">
-                {ESTADOS.map((estado) => (
+                {ESTADOS.map(estado => (
                   <button key={estado.label} onClick={() => actualizarEstado(pedido.id, estado.label)} disabled={pedido.estado === estado.label} className={pedido.estado === estado.label ? 'btn-selected' : ''}>
                     {estado.icon} {estado.label}
                   </button>
@@ -267,6 +248,23 @@ function App() {
                       <li key={i}>🛒 {art.nombre} — {art.cantidad} × ${art.precioUnit}</li>
                     ))}
                   </ul>
+                  {pedido.imagenes && pedido.imagenes.length > 0 && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <strong>📷 Capturas:</strong>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {pedido.imagenes.map((img, i) => (
+                          <img
+                            key={i}
+                            src={`http://localhost:3000${img.url}`}
+                            alt="Pedido"
+                            width={100}
+                            style={{ cursor: 'zoom-in', borderRadius: '6px' }}
+                            onClick={() => setImagenAmpliada(`http://localhost:3000${img.url}`)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </li>
@@ -280,6 +278,23 @@ function App() {
         </button>
         {mostrarEstadisticas && <Estadisticas />}
       </section>
+
+      {imagenAmpliada && (
+        <div
+          onClick={() => setImagenAmpliada(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 9999, cursor: 'pointer'
+          }}
+        >
+          <img
+            src={imagenAmpliada}
+            alt="Ampliada"
+            style={{ maxWidth: '90%', maxHeight: '90%', borderRadius: '8px' }}
+          />
+        </div>
+      )}
     </main>
   );
 }
