@@ -10,12 +10,9 @@ function App() {
   const [imagenAmpliada, setImagenAmpliada] = useState(null);
   const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '', codigo: '' });
   const [nuevoPedido, setNuevoPedido] = useState({
-    nombre: '',
-    apellido: '',
-    codigo: '',
+    nombre: '', apellido: '', codigo: '',
     fecha: new Date().toISOString().split('T')[0],
-    estado: 'PENDIENTE',
-    comentarios: '',
+    estado: 'PENDIENTE', comentarios: '',
     articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
   });
   const [imagenes, setImagenes] = useState([]);
@@ -29,8 +26,7 @@ function App() {
   ];
 
   useEffect(() => {
-    fetch('https://temu-pedidos-production.up.railway.app/pedidos')
-
+    fetch(`${API_URL}/pedidos`)
       .then(res => res.json())
       .then(data => Array.isArray(data) ? setPedidos(data) : setPedidos([]))
       .catch(() => setPedidos([]));
@@ -77,85 +73,43 @@ function App() {
     });
   };
 
-const enviarPedido = async () => {
-  const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
-  const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
+  const enviarPedido = async () => {
+    const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
+    const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
 
-  const tieneFotos = imagenes.length > 0;
-  const formData = new FormData();
-
-  if (tieneFotos) {
+    const formData = new FormData();
     formData.append('familiar', familiar);
     formData.append('totalMonto', totalMonto);
     formData.append('fecha', nuevoPedido.fecha);
-    formData.append('estado', nuevoPedido.estado);
     formData.append('comentarios', nuevoPedido.comentarios);
+    formData.append('estado', nuevoPedido.estado);
     formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
     imagenes.forEach((img) => formData.append('imagenes', img));
-  }
-await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
 
-  try {
-    const respuesta = await fetch(
-  `https://temu-pedidos-production.up.railway.app/${tieneFotos ? 'pedidos-con-foto' : 'pedidos'}`,
-  {
-    method: 'POST',
-    headers: tieneFotos ? undefined : { 'Content-Type': 'application/json' },
-    body: tieneFotos
-      ? formData
-      : JSON.stringify({
-          familiar,
-          totalMonto,
-          fecha: nuevoPedido.fecha,
-          estado: nuevoPedido.estado,
-          comentarios: nuevoPedido.comentarios,
-          articulos: nuevoPedido.articulos
-        })
-  }
-);
-
-
-    if (!respuesta.ok) {
-      let errorMsg = 'Error inesperado';
-      try {
-        const error = await respuesta.json();
-        errorMsg = error?.detalle || error?.error || JSON.stringify(error);
-      } catch {
-        errorMsg = await respuesta.text();
-      }
-      throw new Error(errorMsg);
+    try {
+      const res = await fetch(`${API_URL}/pedidos-con-foto`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) throw new Error(data?.error || 'Error desconocido al enviar');
+      alert("✅ Pedido enviado con éxito");
+      guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
+      setPedidos([data, ...pedidos]);
+      setNuevoPedido({
+        nombre: '', apellido: '', codigo: data.codigo || '',
+        fecha: new Date().toISOString().split('T')[0], estado: 'PENDIENTE', comentarios: '',
+        articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
+      });
+      setImagenes([]);
+    } catch (error) {
+      alert('Error: ' + error.message);
     }
-
-    const data = await respuesta.json();
-    alert("✅ Pedido enviado con éxito");
-
-    setPedidos((prev) => [data, ...prev]);
-    guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
-
-    setNuevoPedido({
-      nombre: '',
-      apellido: '',
-      codigo: data.codigo || '',
-      fecha: new Date().toISOString().split('T')[0],
-      estado: 'PENDIENTE',
-      comentarios: '',
-      articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
-    });
-    setImagenes([]);
-  } catch (error) {
-    console.error("Error completo:", error);
-    alert("Error al enviar pedido: " + (error.message || "Error desconocido"));
-  }
-};
-
-
-};
-
+  };
 
   const actualizarEstado = async (id, estadoNuevo) => {
     try {
-      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}/estado`, {
-
+      await fetch(`${API_URL}/pedidos/${id}/estado`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: estadoNuevo })
       });
@@ -168,10 +122,7 @@ await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
   const eliminarPedido = async (id) => {
     if (!window.confirm('¿Seguro que deseas eliminar este pedido?')) return;
     try {
-      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}`, {
-  method: 'DELETE'
-});
-
+      await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
       setPedidos(pedidos.filter(p => p.id !== id));
     } catch {
       alert('Error al eliminar el pedido');
@@ -303,11 +254,11 @@ await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
                         {pedido.imagenes.map((img, i) => (
                           <img
                             key={i}
-                            src={`https://temu-pedidos-production.up.railway.app${img.url}`}
+                            src={img.url}
                             alt="Pedido"
                             width={100}
                             style={{ cursor: 'zoom-in', borderRadius: '6px' }}
-                            onClick={() => setImagenAmpliada(`http://localhost:3000${img.url}`)}
+                            onClick={() => setImagenAmpliada(img.url)}
                           />
                         ))}
                       </div>
@@ -324,7 +275,8 @@ await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
         <button className="btn-secondary" onClick={() => setMostrarEstadisticas(!mostrarEstadisticas)}>
           📈 {mostrarEstadisticas ? 'Ocultar estadísticas' : 'Ver estadísticas'}
         </button>
-        {mostrarEstadisticas && <Estadisticas />}
+        {mostrarEstadisticas && <Estadisticas API_URL={API_URL} />}
+
       </section>
 
       {imagenAmpliada && (

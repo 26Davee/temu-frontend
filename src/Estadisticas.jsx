@@ -6,17 +6,17 @@ import {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6384'];
 
-const Estadisticas = () => {
+const Estadisticas = ({ API_URL }) => {
   const [data, setData] = useState(null);
   const [vista, setVista] = useState('mes');
   const [nombre, setNombre] = useState('');
 
   useEffect(() => {
-    fetch('/estadisticas')
+    fetch(`${API_URL}/estadisticas`)
       .then(res => res.json())
       .then(setData)
       .catch(err => console.error('Error al cargar estadísticas', err));
-  }, []);
+  }, [API_URL]);
 
   if (!data) return <p>Cargando estadísticas...</p>;
 
