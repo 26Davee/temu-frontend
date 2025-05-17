@@ -95,10 +95,18 @@ const enviarPedido = async () => {
       body: formData
     });
 
+console.log('Respuesta del servidor:', respuesta);
     if (!respuesta.ok) {
-      const error = await respuesta.json();
-      throw new Error(error.detalle || error.error || 'Error inesperado');
+      let errorMsg = 'Error inesperado';
+      try {
+        const error = await respuesta.json();
+        errorMsg = error?.detalle || error?.error || JSON.stringify(error);
+      } catch {
+        errorMsg = await respuesta.text(); // Si no es JSON, intenta leer como texto
+      }
+      throw new Error(errorMsg);
     }
+
 
     const data = await respuesta.json();
     alert("✅ Pedido enviado con éxito");
