@@ -80,38 +80,53 @@ const enviarPedido = async () => {
   const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
   const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
 
+  const tieneFotos = imagenes.length > 0;
   const formData = new FormData();
-  formData.append('familiar', familiar);
-  formData.append('totalMonto', totalMonto);
-  formData.append('fecha', nuevoPedido.fecha);
-  formData.append('estado', nuevoPedido.estado);
-  formData.append('comentarios', nuevoPedido.comentarios);
-  formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
-  imagenes.forEach((img) => formData.append('imagenes', img));
+
+  if (tieneFotos) {
+    formData.append('familiar', familiar);
+    formData.append('totalMonto', totalMonto);
+    formData.append('fecha', nuevoPedido.fecha);
+    formData.append('estado', nuevoPedido.estado);
+    formData.append('comentarios', nuevoPedido.comentarios);
+    formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
+    imagenes.forEach((img) => formData.append('imagenes', img));
+  }
 
   try {
-    const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
-      method: 'POST',
-      body: formData
-    });
+    const respuesta = await fetch(
+      `https://temu-pedidos-production.up.railway.app/${tieneFotos ? 'pedidos-con-foto' : 'pedidos'}`,
+      {
+        method: 'POST',
+        headers: tieneFotos ? undefined : { 'Content-Type': 'application/json' },
+        body: tieneFotos
+          ? formData
+          : JSON.stringify({
+              familiar,
+              totalMonto,
+              fecha: nuevoPedido.fecha,
+              estado: nuevoPedido.estado,
+              comentarios: nuevoPedido.comentarios,
+              articulos: nuevoPedido.articulos
+            })
+      }
+    );
 
-console.log('Respuesta del servidor:', respuesta);
     if (!respuesta.ok) {
       let errorMsg = 'Error inesperado';
       try {
         const error = await respuesta.json();
         errorMsg = error?.detalle || error?.error || JSON.stringify(error);
       } catch {
-        errorMsg = await respuesta.text(); // Si no es JSON, intenta leer como texto
+        errorMsg = await respuesta.text();
       }
       throw new Error(errorMsg);
     }
 
-
     const data = await respuesta.json();
     alert("✅ Pedido enviado con éxito");
 
-    setPedidos([data, ...pedidos]);
+    setPedidos((prev) => [data, ...prev]);
     guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
 
     setNuevoPedido({
@@ -125,8 +140,12 @@ console.log('Respuesta del servidor:', respuesta);
     });
     setImagenes([]);
   } catch (error) {
-    alert("Error al enviar pedido: " + error.message);
+    console.error("Error completo:", error);
+    alert("Error al enviar pedido: " + (error.message || "Error desconocido"));
   }
+};
+
+
 };
 
 
@@ -277,7 +296,8 @@ console.log('Respuesta del servidor:', respuesta);
                         {pedido.imagenes.map((img, i) => (
                           <img
                             key={i}
-                            src={`https://temu-pedidos-production.up.railway.app${img.url}`}
+                            onClick={() => setImagenAmpliada(`https://temu-pedidos-production.up.railway.app${img.url}`)}
+
                             alt="Pedido"
                             width={100}
                             style={{ cursor: 'zoom-in', borderRadius: '6px' }}
