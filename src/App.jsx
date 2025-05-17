@@ -3,6 +3,7 @@ import './App.css';
 import Estadisticas from './Estadisticas';
 
 function App() {
+  const API_URL = 'https://temu-pedidos-production.up.railway.app';
   const [mostrarEstadisticas, setMostrarEstadisticas] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [clientesFrecuentes, setClientesFrecuentes] = useState([]);
@@ -92,25 +93,27 @@ const enviarPedido = async () => {
     formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
     imagenes.forEach((img) => formData.append('imagenes', img));
   }
+await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
 
   try {
     const respuesta = await fetch(
-      `https://temu-pedidos-production.up.railway.app/${tieneFotos ? 'pedidos-con-foto' : 'pedidos'}`,
-      {
-        method: 'POST',
-        headers: tieneFotos ? undefined : { 'Content-Type': 'application/json' },
-        body: tieneFotos
-          ? formData
-          : JSON.stringify({
-              familiar,
-              totalMonto,
-              fecha: nuevoPedido.fecha,
-              estado: nuevoPedido.estado,
-              comentarios: nuevoPedido.comentarios,
-              articulos: nuevoPedido.articulos
-            })
-      }
-    );
+  `https://temu-pedidos-production.up.railway.app/${tieneFotos ? 'pedidos-con-foto' : 'pedidos'}`,
+  {
+    method: 'POST',
+    headers: tieneFotos ? undefined : { 'Content-Type': 'application/json' },
+    body: tieneFotos
+      ? formData
+      : JSON.stringify({
+          familiar,
+          totalMonto,
+          fecha: nuevoPedido.fecha,
+          estado: nuevoPedido.estado,
+          comentarios: nuevoPedido.comentarios,
+          articulos: nuevoPedido.articulos
+        })
+  }
+);
+
 
     if (!respuesta.ok) {
       let errorMsg = 'Error inesperado';
@@ -152,6 +155,7 @@ const enviarPedido = async () => {
   const actualizarEstado = async (id, estadoNuevo) => {
     try {
       await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}/estado`, {
+
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: estadoNuevo })
       });
@@ -164,7 +168,10 @@ const enviarPedido = async () => {
   const eliminarPedido = async (id) => {
     if (!window.confirm('¿Seguro que deseas eliminar este pedido?')) return;
     try {
-      await fetch(`http://localhost:3000/pedidos/${id}`, { method: 'DELETE' });
+      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}`, {
+  method: 'DELETE'
+});
+
       setPedidos(pedidos.filter(p => p.id !== id));
     } catch {
       alert('Error al eliminar el pedido');
@@ -296,8 +303,7 @@ const enviarPedido = async () => {
                         {pedido.imagenes.map((img, i) => (
                           <img
                             key={i}
-                            onClick={() => setImagenAmpliada(`https://temu-pedidos-production.up.railway.app${img.url}`)}
-
+                            src={`https://temu-pedidos-production.up.railway.app${img.url}`}
                             alt="Pedido"
                             width={100}
                             style={{ cursor: 'zoom-in', borderRadius: '6px' }}
