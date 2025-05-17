@@ -12,7 +12,7 @@ const Estadisticas = () => {
   const [nombre, setNombre] = useState('');
 
   useEffect(() => {
-    fetch('https://temu-pedidos-production.up.railway.app/estadisticas')
+    fetch('/estadisticas')
       .then(res => res.json())
       .then(setData)
       .catch(err => console.error('Error al cargar estadísticas', err));

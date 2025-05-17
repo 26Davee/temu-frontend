@@ -28,7 +28,8 @@ function App() {
   ];
 
   useEffect(() => {
-    fetch('http://localhost:3000/pedidos')
+    fetch('https://temu-pedidos-production.up.railway.app/pedidos')
+
       .then(res => res.json())
       .then(data => Array.isArray(data) ? setPedidos(data) : setPedidos([]))
       .catch(() => setPedidos([]));
@@ -89,7 +90,7 @@ const enviarPedido = async () => {
   imagenes.forEach((img) => formData.append('imagenes', img));
 
   try {
-    const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos-con-foto', {
+    const respuesta = await fetch('https://temu-pedidos-production.up.railway.app/pedidos', {
       method: 'POST',
       body: formData
     });
@@ -123,7 +124,7 @@ const enviarPedido = async () => {
 
   const actualizarEstado = async (id, estadoNuevo) => {
     try {
-      await fetch(`http://localhost:3000/pedidos/${id}/estado`, {
+      await fetch(`https://temu-pedidos-production.up.railway.app/pedidos/${id}/estado`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: estadoNuevo })
       });
@@ -268,7 +269,7 @@ const enviarPedido = async () => {
                         {pedido.imagenes.map((img, i) => (
                           <img
                             key={i}
-                            src={`http://localhost:3000${img.url}`}
+                            src={`https://temu-pedidos-production.up.railway.app${img.url}`}
                             alt="Pedido"
                             width={100}
                             style={{ cursor: 'zoom-in', borderRadius: '6px' }}
