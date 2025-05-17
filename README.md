@@ -1,12 +1,33 @@
-# React + Vite
+# 📦 Gestión de Pedidos Temu (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web desarrollada con **React + Vite** para gestionar pedidos personalizados con carga de imágenes, filtros por estado, estadísticas dinámicas y más.
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Registro de pedidos con artículos, comentarios, y estado.
+- Carga opcional de imágenes (almacenadas en Cloudinary).
+- Filtrado por nombre, código, fecha y estado.
+- Visualización de estadísticas por mes, estado y cliente.
+- Soporte para modo claro y oscuro según el sistema operativo.
 
-## Expanding the ESLint configuration
+## 🌐 Backend
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- API REST construida con Express y Prisma.
+- Almacenamiento de imágenes en **Cloudinary**.
+- Base de datos PostgreSQL alojada en **Railway**.
+- URL de producción: [`https://temu-pedidos-production.up.railway.app`](https://temu-pedidos-production.up.railway.app)
+
+## 🧑‍💻 Instalación local
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/TU_USUARIO/temu-pedidos.git
+
+# Ir al frontend
+cd temu-pedidos
+
+# Instalar dependencias
+npm install
+
+# Iniciar en desarrollo
+npm run dev
