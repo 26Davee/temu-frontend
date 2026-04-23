@@ -1,33 +1,79 @@
-# 📦 Gestión de Pedidos Temu (Frontend)
+# Sistema de Gestion de Pedidos - Frontend
 
-Aplicación web desarrollada con **React + Vite** para gestionar pedidos personalizados con carga de imágenes, filtros por estado, estadísticas dinámicas y más.
+Aplicacion web construida con React y Vite para registrar pedidos, consultar su
+estado, adjuntar imagenes y revisar estadisticas operativas.
 
-## 🚀 Funcionalidades
+## Caracteristicas
 
-- Registro de pedidos con artículos, comentarios, y estado.
-- Carga opcional de imágenes (almacenadas en Cloudinary).
-- Filtrado por nombre, código, fecha y estado.
-- Visualización de estadísticas por mes, estado y cliente.
-- Soporte para modo claro y oscuro según el sistema operativo.
+- Registro de pedidos con cliente, fecha, estado, comentarios y articulos.
+- Carga opcional de imagenes asociadas al pedido.
+- Busqueda por cliente, codigo, fecha y estado.
+- Cambio rapido de estado de cada pedido.
+- Vista de estadisticas por mes, estado y cliente.
+- Persistencia local de clientes frecuentes.
 
-## 🌐 Backend
+## Tecnologias
 
-- API REST construida con Express y Prisma.
-- Almacenamiento de imágenes en **Cloudinary**.
-- Base de datos PostgreSQL alojada en **Railway**.
-- URL de producción: [`https://temu-pedidos-production.up.railway.app`](https://temu-pedidos-production.up.railway.app)
+- React
+- Vite
+- CSS
+- Recharts
 
-## 🧑‍💻 Instalación local
+## Estructura principal
+
+```text
+src/
+  App.jsx             # Pantalla principal y flujo de pedidos
+  Estadisticas.jsx    # Graficos y resumenes del sistema
+  App.css             # Estilos de la interfaz
+  main.jsx            # Punto de entrada de React
+```
+
+## Configuracion local
+
+1. Clonar el repositorio.
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/TU_USUARIO/temu-pedidos.git
+git clone https://github.com/26Davee/temu-frontend.git
+cd temu-frontend
+```
 
-# Ir al frontend
-cd temu-pedidos
+2. Instalar dependencias.
 
-# Instalar dependencias
+```bash
 npm install
+```
 
-# Iniciar en desarrollo
+3. Crear el archivo `.env` a partir de `.env.example`.
+
+```bash
+cp .env.example .env
+```
+
+4. Ejecutar en desarrollo.
+
+```bash
 npm run dev
+```
+
+## Variables de entorno
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+En produccion puede apuntar al backend desplegado en Railway u otro proveedor.
+
+## Scripts
+
+```bash
+npm run dev      # servidor local de Vite
+npm run build    # compilacion de produccion
+npm run preview  # vista previa del build
+npm run lint     # revision con ESLint
+```
+
+## Deploy
+
+- Frontend: [temu-frontend.vercel.app](https://temu-frontend.vercel.app)
+- Backend relacionado: [temu-pedidos](https://github.com/26Davee/temu-pedidos)

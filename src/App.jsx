@@ -1,81 +1,120 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import Estadisticas from './Estadisticas';
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://temu-pedidos-production.up.railway.app';
+const ESTADOS = ['PENDIENTE', 'SALIDO', 'ADUANA', 'RUTA', 'ENTREGADO'];
+const pedidoInicial = {
+  nombre: '',
+  apellido: '',
+  codigo: '',
+  fecha: new Date().toISOString().split('T')[0],
+  estado: 'PENDIENTE',
+  comentarios: '',
+  articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
+};
+
 function App() {
-  const API_URL = 'https://temu-pedidos-production.up.railway.app';
   const [mostrarEstadisticas, setMostrarEstadisticas] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [clientesFrecuentes, setClientesFrecuentes] = useState([]);
   const [imagenAmpliada, setImagenAmpliada] = useState(null);
   const [filtro, setFiltro] = useState({ estado: '', texto: '', fecha: '', codigo: '' });
-  const [nuevoPedido, setNuevoPedido] = useState({
-    nombre: '', apellido: '', codigo: '',
-    fecha: new Date().toISOString().split('T')[0],
-    estado: 'PENDIENTE', comentarios: '',
-    articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
-  });
+  const [nuevoPedido, setNuevoPedido] = useState(pedidoInicial);
   const [imagenes, setImagenes] = useState([]);
-
-  const ESTADOS = [
-    { label: 'PENDIENTE', icon: '🕐' },
-    { label: 'SALIDO', icon: '🛫' },
-    { label: 'ADUANA', icon: '📦' },
-    { label: 'RUTA', icon: '🚚' },
-    { label: 'ENTREGADO', icon: '✅' }
-  ];
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API_URL}/pedidos`)
-      .then(res => res.json())
-      .then(data => Array.isArray(data) ? setPedidos(data) : setPedidos([]))
-      .catch(() => setPedidos([]));
+    cargarPedidos();
 
     const guardados = localStorage.getItem('clientesFrecuentes');
-    if (guardados) setClientesFrecuentes(JSON.parse(guardados));
+    if (guardados) {
+      setClientesFrecuentes(JSON.parse(guardados));
+    }
   }, []);
 
-  const guardarClienteFrecuente = (nombre, apellido) => {
-    const cliente = `${nombre.trim()} ${apellido.trim()}`;
-    if (!clientesFrecuentes.includes(cliente)) {
-      const actualizados = [...clientesFrecuentes, cliente];
-      setClientesFrecuentes(actualizados);
-      localStorage.setItem('clientesFrecuentes', JSON.stringify(actualizados));
+  const cargarPedidos = async () => {
+    try {
+      setCargando(true);
+      const res = await fetch(`${API_URL}/pedidos`);
+      const data = await res.json();
+      setPedidos(Array.isArray(data) ? data : []);
+      setError('');
+    } catch {
+      setPedidos([]);
+      setError('No se pudieron cargar los pedidos.');
+    } finally {
+      setCargando(false);
     }
   };
 
+  const guardarClienteFrecuente = (nombre, apellido) => {
+    const cliente = `${nombre.trim()} ${apellido.trim()}`.trim();
+    if (!cliente || clientesFrecuentes.includes(cliente)) return;
+
+    const actualizados = [...clientesFrecuentes, cliente];
+    setClientesFrecuentes(actualizados);
+    localStorage.setItem('clientesFrecuentes', JSON.stringify(actualizados));
+  };
+
   const eliminarClienteFrecuente = (cliente) => {
-    const actualizados = clientesFrecuentes.filter(c => c !== cliente);
+    const actualizados = clientesFrecuentes.filter((item) => item !== cliente);
     setClientesFrecuentes(actualizados);
     localStorage.setItem('clientesFrecuentes', JSON.stringify(actualizados));
   };
 
   const seleccionarCliente = (cliente) => {
     const [nombre, ...apellidoArr] = cliente.split(' ');
-    setNuevoPedido({ ...nuevoPedido, nombre, apellido: apellidoArr.join(' ') });
+    setNuevoPedido((pedido) => ({ ...pedido, nombre, apellido: apellidoArr.join(' ') }));
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNuevoPedido({ ...nuevoPedido, [name]: value });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setNuevoPedido((pedido) => ({ ...pedido, [name]: value }));
   };
 
   const handleArticuloChange = (index, field, value) => {
-    const updated = [...nuevoPedido.articulos];
-    updated[index][field] = field === 'cantidad' || field === 'precioUnit' ? parseFloat(value) : value;
-    setNuevoPedido({ ...nuevoPedido, articulos: updated });
+    const updated = nuevoPedido.articulos.map((articulo, currentIndex) => {
+      if (currentIndex !== index) return articulo;
+      const nextValue = field === 'cantidad' || field === 'precioUnit'
+        ? Number(value)
+        : value;
+
+      return { ...articulo, [field]: nextValue };
+    });
+
+    setNuevoPedido((pedido) => ({ ...pedido, articulos: updated }));
   };
 
   const agregarArticulo = () => {
-    setNuevoPedido({
-      ...nuevoPedido,
-      articulos: [...nuevoPedido.articulos, { nombre: '', cantidad: 1, precioUnit: 0 }]
-    });
+    setNuevoPedido((pedido) => ({
+      ...pedido,
+      articulos: [...pedido.articulos, { nombre: '', cantidad: 1, precioUnit: 0 }]
+    }));
   };
 
-  const enviarPedido = async () => {
-    const totalMonto = nuevoPedido.articulos.reduce((acc, a) => acc + a.cantidad * a.precioUnit, 0);
-    const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`;
+  const eliminarArticulo = (index) => {
+    setNuevoPedido((pedido) => ({
+      ...pedido,
+      articulos: pedido.articulos.filter((_, currentIndex) => currentIndex !== index)
+    }));
+  };
+
+  const enviarPedido = async (event) => {
+    event.preventDefault();
+
+    const articulosValidos = nuevoPedido.articulos.filter((articulo) => articulo.nombre.trim());
+    if (!nuevoPedido.nombre.trim() || !nuevoPedido.apellido.trim() || articulosValidos.length === 0) {
+      setError('Completa el cliente y al menos un articulo.');
+      return;
+    }
+
+    const totalMonto = articulosValidos.reduce(
+      (acc, articulo) => acc + articulo.cantidad * articulo.precioUnit,
+      0
+    );
+    const familiar = `${nuevoPedido.nombre} ${nuevoPedido.apellido}`.trim();
 
     const formData = new FormData();
     formData.append('familiar', familiar);
@@ -83,7 +122,7 @@ function App() {
     formData.append('fecha', nuevoPedido.fecha);
     formData.append('comentarios', nuevoPedido.comentarios);
     formData.append('estado', nuevoPedido.estado);
-    formData.append('articulos', JSON.stringify(nuevoPedido.articulos));
+    formData.append('articulos', JSON.stringify(articulosValidos));
     imagenes.forEach((img) => formData.append('imagenes', img));
 
     try {
@@ -92,207 +131,289 @@ function App() {
         body: formData
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data) throw new Error(data?.error || 'Error desconocido al enviar');
-      alert("✅ Pedido enviado con éxito");
+      if (!res.ok || !data) throw new Error(data?.error || 'Error al enviar el pedido.');
+
       guardarClienteFrecuente(nuevoPedido.nombre, nuevoPedido.apellido);
-      setPedidos([data, ...pedidos]);
-      setNuevoPedido({
-        nombre: '', apellido: '', codigo: data.codigo || '',
-        fecha: new Date().toISOString().split('T')[0], estado: 'PENDIENTE', comentarios: '',
-        articulos: [{ nombre: '', cantidad: 1, precioUnit: 0 }]
-      });
+      setPedidos((actuales) => [data, ...actuales]);
+      setNuevoPedido({ ...pedidoInicial, fecha: new Date().toISOString().split('T')[0] });
       setImagenes([]);
-    } catch (error) {
-      alert('Error: ' + error.message);
+      setError('');
+    } catch (requestError) {
+      setError(requestError.message);
     }
   };
 
   const actualizarEstado = async (id, estadoNuevo) => {
     try {
-      await fetch(`${API_URL}/pedidos/${id}/estado`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_URL}/pedidos/${id}/estado`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: estadoNuevo })
       });
-      setPedidos(pedidos.map(p => p.id === id ? { ...p, estado: estadoNuevo } : p));
+
+      if (!res.ok) throw new Error();
+      setPedidos((actuales) => actuales.map((pedido) => (
+        pedido.id === id ? { ...pedido, estado: estadoNuevo } : pedido
+      )));
     } catch {
-      alert('Error al cambiar estado');
+      setError('No se pudo cambiar el estado.');
     }
   };
 
   const eliminarPedido = async (id) => {
-    if (!window.confirm('¿Seguro que deseas eliminar este pedido?')) return;
+    if (!window.confirm('Seguro que deseas eliminar este pedido?')) return;
+
     try {
-      await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
-      setPedidos(pedidos.filter(p => p.id !== id));
+      const res = await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      setPedidos((actuales) => actuales.filter((pedido) => pedido.id !== id));
+      setError('');
     } catch {
-      alert('Error al eliminar el pedido');
+      setError('No se pudo eliminar el pedido.');
     }
   };
 
-  const pedidosFiltrados = pedidos.filter(p => {
-    const c1 = filtro.estado ? p.estado === filtro.estado : true;
-    const c2 = filtro.texto ? p.familiar.toLowerCase().includes(filtro.texto.toLowerCase()) : true;
-    const c3 = filtro.fecha ? p.fecha.startsWith(filtro.fecha) : true;
-    const c4 = filtro.codigo ? p.codigo?.toLowerCase().includes(filtro.codigo.toLowerCase()) : true;
-    return c1 && c2 && c3 && c4;
-  });
+  const pedidosFiltrados = useMemo(() => pedidos.filter((pedido) => {
+    const coincideEstado = filtro.estado ? pedido.estado === filtro.estado : true;
+    const coincideTexto = filtro.texto
+      ? pedido.familiar.toLowerCase().includes(filtro.texto.toLowerCase())
+      : true;
+    const coincideFecha = filtro.fecha ? pedido.fecha.startsWith(filtro.fecha) : true;
+    const coincideCodigo = filtro.codigo
+      ? pedido.codigo?.toLowerCase().includes(filtro.codigo.toLowerCase())
+      : true;
+
+    return coincideEstado && coincideTexto && coincideFecha && coincideCodigo;
+  }), [pedidos, filtro]);
 
   return (
-    <main className="container">
-      <header className="section header-section">
-        <h1 className="title">📦 Gestión de Pedidos Temu</h1>
+    <main className="app-shell">
+      <header className="app-header">
+        <div>
+          <p className="eyebrow">Panel de pedidos</p>
+          <h1>Gestion de Pedidos</h1>
+        </div>
+        <button className="btn-secondary" onClick={cargarPedidos} type="button">
+          Actualizar
+        </button>
       </header>
 
-      <section className="section form-section">
-        <h2 className="subtitle">📝 Nuevo Pedido</h2>
+      {error && <p className="alert">{error}</p>}
 
-        {clientesFrecuentes.length > 0 && (
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label>Clientes frecuentes:</label>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {clientesFrecuentes.map(cliente => (
-                <div key={cliente} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <button className="btn-secondary" onClick={() => seleccionarCliente(cliente)}>{cliente}</button>
-                  <button className="btn-delete" onClick={() => eliminarClienteFrecuente(cliente)}>✖</button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="form-grid">
-          <div className="form-group">
-            <label>Nombre</label>
-            <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label>Apellido</label>
-            <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label>Código</label>
-            <input name="codigo" value={nuevoPedido.codigo} readOnly placeholder="Generado automáticamente" />
-          </div>
-          <div className="form-group">
-            <label>Fecha</label>
-            <input type="date" name="fecha" value={nuevoPedido.fecha} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label>Estado</label>
-            <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
-              {ESTADOS.map(e => <option key={e.label} value={e.label}>{e.icon} {e.label}</option>)}
-            </select>
-          </div>
-          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label>Comentarios</label>
-            <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} />
-          </div>
+      <section className="surface">
+        <div className="section-heading">
+          <h2>Nuevo pedido</h2>
+          <span>{imagenes.length} imagenes adjuntas</span>
         </div>
 
-        <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-          <label>📎 Adjuntar foto del pedido (opcional)</label>
-          <input type="file" multiple accept="image/*" onChange={e => setImagenes([...e.target.files])} />
-        </div>
-
-        <h3>📦 Artículos</h3>
-        {nuevoPedido.articulos.map((art, i) => (
-          <div key={i} className="articulo-row">
-            <input placeholder="Artículo" value={art.nombre} onChange={(e) => handleArticuloChange(i, 'nombre', e.target.value)} />
-            <input type="number" placeholder="Cantidad" value={art.cantidad} onChange={(e) => handleArticuloChange(i, 'cantidad', e.target.value)} />
-            <input type="number" placeholder="Precio" value={art.precioUnit} onChange={(e) => handleArticuloChange(i, 'precioUnit', e.target.value)} />
-          </div>
-        ))}
-        <button onClick={agregarArticulo} className="btn-secondary">+ Agregar artículo</button>
-        <button onClick={enviarPedido} className="btn-primary">✅ Enviar Pedido</button>
-      </section>
-
-      <section className="section">
-        <h2 className="subtitle">📚 Lista de Pedidos</h2>
-        <div className="filter-bar">
-          <input type="text" placeholder="Buscar por nombre" value={filtro.texto} onChange={e => setFiltro({ ...filtro, texto: e.target.value })} />
-          <input type="text" placeholder="Buscar por código" value={filtro.codigo} onChange={e => setFiltro({ ...filtro, codigo: e.target.value })} />
-          <select value={filtro.estado} onChange={e => setFiltro({ ...filtro, estado: e.target.value })}>
-            <option value="">Todos</option>
-            {ESTADOS.map(e => <option key={e.label} value={e.label}>{e.icon} {e.label}</option>)}
-          </select>
-          <input type="date" value={filtro.fecha} onChange={e => setFiltro({ ...filtro, fecha: e.target.value })} />
-          <button onClick={() => setFiltro({ estado: '', texto: '', fecha: '', codigo: '' })} className="btn-secondary">🔄 Limpiar filtros</button>
-        </div>
-
-        <ul className="pedido-list">
-          {pedidosFiltrados.map(pedido => (
-            <li key={pedido.id} className="pedido-item">
-              <div className="pedido-header">
-                <span><strong>{pedido.familiar}</strong> — {pedido.estado} — ${pedido.totalMonto}</span>
-                <div>
-                  <button onClick={() => setPedidos(pedidos.map(p => p.id === pedido.id ? { ...p, mostrar: !p.mostrar } : p))}>👁 Ver</button>
-                  <button onClick={() => eliminarPedido(pedido.id)} className="btn-delete">🗑 Eliminar</button>
-                </div>
-              </div>
-              <div className="estado-buttons">
-                {ESTADOS.map(estado => (
-                  <button key={estado.label} onClick={() => actualizarEstado(pedido.id, estado.label)} disabled={pedido.estado === estado.label} className={pedido.estado === estado.label ? 'btn-selected' : ''}>
-                    {estado.icon} {estado.label}
-                  </button>
+        <form onSubmit={enviarPedido}>
+          {clientesFrecuentes.length > 0 && (
+            <div className="form-group">
+              <label>Clientes frecuentes</label>
+              <div className="chip-list">
+                {clientesFrecuentes.map((cliente) => (
+                  <span className="chip" key={cliente}>
+                    <button type="button" onClick={() => seleccionarCliente(cliente)}>
+                      {cliente}
+                    </button>
+                    <button
+                      aria-label={`Eliminar ${cliente}`}
+                      className="chip-remove"
+                      onClick={() => eliminarClienteFrecuente(cliente)}
+                      type="button"
+                    >
+                      x
+                    </button>
+                  </span>
                 ))}
               </div>
-              {pedido.mostrar && (
-                <div className="pedido-detalles">
-                  <p><strong>Código:</strong> {pedido.codigo}</p>
-                  <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
-                  <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString()}</p>
-                  <p><strong>Total:</strong> ${pedido.totalMonto}</p>
-                  <ul>
-                    {pedido.articulos.map((art, i) => (
-                      <li key={i}>🛒 {art.nombre} — {art.cantidad} × ${art.precioUnit}</li>
-                    ))}
-                  </ul>
-                  {pedido.imagenes && pedido.imagenes.length > 0 && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <strong>📷 Capturas:</strong>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {pedido.imagenes.map((img, i) => (
-                          <img
-                            key={i}
-                            src={img.url}
-                            alt="Pedido"
-                            width={100}
-                            style={{ cursor: 'zoom-in', borderRadius: '6px' }}
-                            onClick={() => setImagenAmpliada(img.url)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+            </div>
+          )}
+
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Nombre</label>
+              <input name="nombre" value={nuevoPedido.nombre} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+              <label>Apellido</label>
+              <input name="apellido" value={nuevoPedido.apellido} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+              <label>Codigo</label>
+              <input name="codigo" value={nuevoPedido.codigo} readOnly placeholder="Generado por el sistema" />
+            </div>
+            <div className="form-group">
+              <label>Fecha</label>
+              <input type="date" name="fecha" value={nuevoPedido.fecha} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+              <label>Estado inicial</label>
+              <select name="estado" value={nuevoPedido.estado} onChange={handleChange}>
+                {ESTADOS.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
+              </select>
+            </div>
+            <div className="form-group full">
+              <label>Comentarios</label>
+              <textarea name="comentarios" value={nuevoPedido.comentarios} onChange={handleChange} />
+            </div>
+            <div className="form-group full">
+              <label>Imagenes del pedido</label>
+              <input type="file" multiple accept="image/*" onChange={(event) => setImagenes([...event.target.files])} />
+            </div>
+          </div>
+
+          <div className="section-heading compact">
+            <h3>Articulos</h3>
+            <button className="btn-secondary" onClick={agregarArticulo} type="button">
+              Agregar articulo
+            </button>
+          </div>
+
+          <div className="article-list">
+            {nuevoPedido.articulos.map((articulo, index) => (
+              <div className="article-row" key={`articulo-${index}`}>
+                <input
+                  placeholder="Articulo"
+                  value={articulo.nombre}
+                  onChange={(event) => handleArticuloChange(index, 'nombre', event.target.value)}
+                />
+                <input
+                  min="1"
+                  type="number"
+                  placeholder="Cantidad"
+                  value={articulo.cantidad}
+                  onChange={(event) => handleArticuloChange(index, 'cantidad', event.target.value)}
+                />
+                <input
+                  min="0"
+                  step="0.01"
+                  type="number"
+                  placeholder="Precio"
+                  value={articulo.precioUnit}
+                  onChange={(event) => handleArticuloChange(index, 'precioUnit', event.target.value)}
+                />
+                <button
+                  className="btn-delete"
+                  disabled={nuevoPedido.articulos.length === 1}
+                  onClick={() => eliminarArticulo(index)}
+                  type="button"
+                >
+                  Eliminar
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="actions">
+            <button className="btn-primary" type="submit">Guardar pedido</button>
+          </div>
+        </form>
       </section>
 
-      <section className="section">
-        <button className="btn-secondary" onClick={() => setMostrarEstadisticas(!mostrarEstadisticas)}>
-          📈 {mostrarEstadisticas ? 'Ocultar estadísticas' : 'Ver estadísticas'}
-        </button>
-        {mostrarEstadisticas && <Estadisticas API_URL={API_URL} />}
+      <section className="surface">
+        <div className="section-heading">
+          <h2>Pedidos</h2>
+          <span>{pedidosFiltrados.length} resultados</span>
+        </div>
 
+        <div className="filter-bar">
+          <input type="text" placeholder="Buscar por cliente" value={filtro.texto} onChange={(event) => setFiltro({ ...filtro, texto: event.target.value })} />
+          <input type="text" placeholder="Buscar por codigo" value={filtro.codigo} onChange={(event) => setFiltro({ ...filtro, codigo: event.target.value })} />
+          <select value={filtro.estado} onChange={(event) => setFiltro({ ...filtro, estado: event.target.value })}>
+            <option value="">Todos los estados</option>
+            {ESTADOS.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
+          </select>
+          <input type="date" value={filtro.fecha} onChange={(event) => setFiltro({ ...filtro, fecha: event.target.value })} />
+          <button className="btn-secondary" onClick={() => setFiltro({ estado: '', texto: '', fecha: '', codigo: '' })} type="button">
+            Limpiar
+          </button>
+        </div>
+
+        {cargando ? (
+          <p className="muted">Cargando pedidos...</p>
+        ) : (
+          <ul className="pedido-list">
+            {pedidosFiltrados.map((pedido) => (
+              <li key={pedido.id} className="pedido-item">
+                <div className="pedido-header">
+                  <div>
+                    <strong>{pedido.familiar}</strong>
+                    <span>{pedido.codigo || 'Sin codigo'} · {pedido.estado}</span>
+                  </div>
+                  <strong>${Number(pedido.totalMonto).toFixed(2)}</strong>
+                </div>
+
+                <div className="estado-buttons">
+                  {ESTADOS.map((estado) => (
+                    <button
+                      key={estado}
+                      onClick={() => actualizarEstado(pedido.id, estado)}
+                      disabled={pedido.estado === estado}
+                      className={pedido.estado === estado ? 'btn-selected' : ''}
+                      type="button"
+                    >
+                      {estado}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pedido-actions">
+                  <button
+                    className="btn-secondary"
+                    onClick={() => setPedidos((actuales) => actuales.map((item) => (
+                      item.id === pedido.id ? { ...item, mostrar: !item.mostrar } : item
+                    )))}
+                    type="button"
+                  >
+                    {pedido.mostrar ? 'Ocultar detalle' : 'Ver detalle'}
+                  </button>
+                  <button className="btn-delete" onClick={() => eliminarPedido(pedido.id)} type="button">
+                    Eliminar
+                  </button>
+                </div>
+
+                {pedido.mostrar && (
+                  <div className="pedido-detalles">
+                    <p><strong>Comentarios:</strong> {pedido.comentarios || 'Ninguno'}</p>
+                    <p><strong>Fecha:</strong> {new Date(pedido.fecha).toLocaleDateString()}</p>
+                    <ul>
+                      {pedido.articulos.map((articulo) => (
+                        <li key={articulo.id}>
+                          {articulo.nombre} · {articulo.cantidad} x ${Number(articulo.precioUnit).toFixed(2)}
+                        </li>
+                      ))}
+                    </ul>
+                    {pedido.imagenes && pedido.imagenes.length > 0 && (
+                      <div className="image-list">
+                        {pedido.imagenes.map((img) => (
+                          <button key={img.id || img.url} onClick={() => setImagenAmpliada(img.url)} type="button">
+                            <img src={img.url} alt="Pedido" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="surface">
+        <div className="section-heading">
+          <h2>Estadisticas</h2>
+          <button className="btn-secondary" onClick={() => setMostrarEstadisticas(!mostrarEstadisticas)} type="button">
+            {mostrarEstadisticas ? 'Ocultar' : 'Mostrar'}
+          </button>
+        </div>
+        {mostrarEstadisticas && <Estadisticas API_URL={API_URL} />}
       </section>
 
       {imagenAmpliada && (
-        <div
-          onClick={() => setImagenAmpliada(null)}
-          style={{
-            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', zIndex: 9999, cursor: 'pointer'
-          }}
-        >
-          <img
-            src={imagenAmpliada}
-            alt="Ampliada"
-            style={{ maxWidth: '90%', maxHeight: '90%', borderRadius: '8px' }}
-          />
+        <div className="image-modal" onClick={() => setImagenAmpliada(null)}>
+          <img src={imagenAmpliada} alt="Pedido ampliado" />
         </div>
       )}
     </main>
